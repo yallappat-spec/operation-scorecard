@@ -93,8 +93,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .sub-btn:hover{opacity:.9}
 .edit-banner{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:11px 16px;font-size:13px;color:#78350f;font-weight:500;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .btn-cancel-edit{padding:6px 14px;background:#fff;color:#78350f;border:1px solid #fde68a;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer}
-
-/* ── SCORE TABLE ── */
 .stbl-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
 .stbl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
 .stbl-title{font-size:20px;font-weight:700;color:var(--navy)}
@@ -104,7 +102,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .stbl-sum-lbl{font-size:11px;color:var(--muted);margin-top:5px;letter-spacing:.4px}
 .stbl-filter{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .stbl-filter select,.stbl-filter input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;background:#fafbfc;outline:none;min-width:150px}
-.stbl-filter select:focus,.stbl-filter input:focus{border-color:var(--blue2);background:#fff}
 .filter-lbl{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
 .stbl-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.05)}
 .stbl-table{width:100%;border-collapse:collapse;min-width:600px}
@@ -115,14 +112,10 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .stbl-table tbody tr:hover{background:#f8faff}
 .stbl-table td{padding:12px 16px;font-size:13px;vertical-align:middle}
 .zone-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
-.zone-g{background:#d1fae5;color:#065f46}
-.zone-y{background:#fef9c3;color:#713f12}
-.zone-r{background:#fee2e2;color:#7f1d1d}
+.zone-g{background:#d1fae5;color:#065f46}.zone-y{background:#fef9c3;color:#713f12}.zone-r{background:#fee2e2;color:#7f1d1d}
 .btn-exp-green{padding:9px 18px;background:#059669;color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .btn-exp-green:hover{opacity:.88}
 .btn-new-audit{padding:9px 18px;background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
-
-/* ── RECORDS ── */
 .rec-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
 .rec-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
 .rec-title{font-size:20px;font-weight:700;color:var(--navy)}
@@ -156,8 +149,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .btn-sm{padding:6px 14px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .btn-edit-sm{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
 .btn-del-sm{background:#f8fafc;color:var(--muted);border:1px solid var(--border);margin-left:auto}
-
-/* ── EDITOR ── */
 .ced-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
 .ced-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:12px;flex-wrap:wrap}
 .ced-title{font-size:20px;font-weight:700;color:var(--navy)}
@@ -236,12 +227,9 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 </style>
 </head>
 <body>
-
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-box"><div class="spinner"></div><div class="loading-txt" id="loadingTxt">Generating…</div><div class="loading-sub" id="loadingSub">Please wait</div></div>
 </div>
-
-<!-- HEADER -->
 <div class="hdr"><div class="hdr-in">
   <div class="hdr-brand">
     <div class="hdr-logo">OS</div>
@@ -254,16 +242,13 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
   </div>
 </div></div>
-
-<!-- FORM VIEW -->
 <div id="viewForm" class="view active">
 <div class="wrap">
   <div class="edit-banner" id="editBanner" style="display:none">
     ✏️ <span><strong>Edit Mode</strong> — Editing saved audit. Save to update the record.</span>
     <button class="btn-cancel-edit" onclick="cancelEdit()">✕ Cancel</button>
   </div>
-  <div class="instr">
-    <div style="font-size:18px;margin-top:1px">📋</div>
+  <div class="instr"><div style="font-size:18px;margin-top:1px">📋</div>
     <div class="instr-text"><strong>Instructions:</strong> Put <strong>1</strong> if control is adhered, <strong>0</strong> if any deviation found, <strong>NA</strong> if not applicable.</div>
   </div>
   <div class="info-card">
@@ -284,9 +269,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
   <div class="legend">
     <span class="legend-lbl">Risk Level:</span>
-    <span class="risk rH">🔴 High Risk</span>
-    <span class="risk rM">🟡 Medium Risk</span>
-    <span class="risk rL">🟢 Low Risk</span>
+    <span class="risk rH">🔴 High Risk</span><span class="risk rM">🟡 Medium Risk</span><span class="risk rL">🟢 Low Risk</span>
   </div>
   <div class="prog-wrap">
     <div class="prog-top"><span id="progLbl">0 of 0 items rated</span><span id="progPct">0%</span></div>
@@ -307,8 +290,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
 </div>
 </div>
-
-<!-- SCORE TABLE VIEW -->
 <div id="viewScoreTable" class="view">
 <div class="stbl-wrap">
   <div class="stbl-top">
@@ -339,25 +320,20 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   <div class="stbl-card">
     <div style="overflow-x:auto">
       <table class="stbl-table">
-        <thead>
-          <tr>
-            <th style="width:44px;text-align:center">#</th>
-            <th>Store Name</th>
-            <th>Month</th>
-            <th style="text-align:center">Score Obtained</th>
-            <th style="text-align:center">Max Score</th>
-            <th style="text-align:center">Score %</th>
-            <th style="text-align:center">Zone</th>
-          </tr>
-        </thead>
+        <thead><tr>
+          <th style="width:44px;text-align:center">#</th>
+          <th>Store Name</th><th>Month</th>
+          <th style="text-align:center">Score Obtained</th>
+          <th style="text-align:center">Max Score</th>
+          <th style="text-align:center">Score %</th>
+          <th style="text-align:center">Zone</th>
+        </tr></thead>
         <tbody id="stblBody"></tbody>
       </table>
     </div>
   </div>
 </div>
 </div>
-
-<!-- RECORDS VIEW -->
 <div id="viewRecords" class="view">
 <div class="rec-wrap">
   <div class="rec-top">
@@ -379,10 +355,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <div class="ep-hint">Select a month → Download Reports saves one HTML report per store · Download CSV saves all stores in one file.</div>
   </div>
   <div class="filter-bar">
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input id="searchInput" placeholder="Search store name…" oninput="renderRecords()"/>
-    </div>
+    <div class="search-wrap"><span class="search-icon">🔍</span><input id="searchInput" placeholder="Search store name…" oninput="renderRecords()"/></div>
     <span class="filter-lbl">Filter by Month:</span>
     <select id="filterMonth" onchange="renderRecords()">
       <option value="">All Months</option>
@@ -401,8 +374,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   <div id="recordsList"></div>
 </div>
 </div>
-
-<!-- EDITOR VIEW -->
 <div id="viewEditor" class="view">
 <div class="ced-wrap">
   <div class="ced-top">
@@ -413,7 +384,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <button class="btn-hdr btn-hdr-gold" style="padding:9px 18px;font-size:13px" onclick="showView('form')">← Back to Audit</button>
     </div>
   </div>
-  <div class="ced-hint">⚠️ Changes here update the audit form immediately. Add or remove sections and clauses, edit names, risk levels and weighted marks anytime.</div>
+  <div class="ced-hint">⚠️ Changes here update the audit form immediately.</div>
   <div id="editorSecs"></div>
   <div class="slist-wrap">
     <div class="slist-hdr">
@@ -425,13 +396,10 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <div class="store-add-row">
         <input id="newStoreInput" placeholder="Type store name and press Add or Enter…" onkeydown="if(event.key==='Enter')addStore()"/>
         <button class="btn-add-store" onclick="addStore()">＋ Add Store</button>
-        <label class="btn-add-store" style="background:#0f766e;cursor:pointer;margin-left:4px">
-          📂 Bulk Upload CSV
-          <input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadStores(this)"/>
-        </label>
+        <label class="btn-add-store" style="background:#0f766e;cursor:pointer;margin-left:4px">📂 Bulk Upload CSV<input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadStores(this)"/></label>
         <button class="btn-add-store" style="background:#dc2626" onclick="clearAllStores()">🗑 Clear All</button>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">📋 CSV format: one store name per line. <a href="#" onclick="downloadSampleCSV();return false;" style="color:var(--blue)">Download sample CSV</a></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">📋 CSV: one store per line. <a href="#" onclick="downloadSampleCSV();return false;" style="color:var(--blue)">Download sample</a></div>
     </div>
   </div>
   <div class="ced-save-bar">
@@ -444,8 +412,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
 </div>
 </div>
-
-<!-- RESULT MODAL -->
 <div class="overlay" id="modalOverlay">
   <div class="modal">
     <div class="saved-banner" id="savedBanner"></div>
@@ -468,7 +434,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     </div>
   </div>
 </div>
-
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DEFAULT_SECTIONS=[
@@ -544,15 +509,11 @@ const DEFAULT_SECTIONS=[
     {clause:'Whether Ecommerce orders have been accepted before 4 hours (average).',risk:'M',wt:3},
   ]},
 ];
-
 let SECTIONS=[];
 function loadSections(){
-  try{
-    const ver=localStorage.getItem('ahm_checklist_ver');
-    if(ver!=='v2'){localStorage.removeItem('ahm_checklist');localStorage.setItem('ahm_checklist_ver','v2');}
-    const s=localStorage.getItem('ahm_checklist');
-    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
-  }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
+  try{const ver=localStorage.getItem('ahm_checklist_ver');if(ver!=='v2'){localStorage.removeItem('ahm_checklist');localStorage.setItem('ahm_checklist_ver','v2');}
+  const s=localStorage.getItem('ahm_checklist');SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
+  catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
 }
 function persistSections(){localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));}
@@ -560,10 +521,8 @@ function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
 function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
 function saveRecordsLS(r){localStorage.setItem('ahm_records',JSON.stringify(r));}
-
 let state={},editingId=null,pendingResult=null;
 function freshState(){const s={};SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{s[sec.id+'_'+i]={rating:1,obs:''}}));return s;}
-
 function showView(v){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   const el=document.getElementById('view'+v[0].toUpperCase()+v.slice(1));
@@ -573,59 +532,40 @@ function showView(v){
   if(v==='form'){populateStoreDropdown();}
   if(v==='scoreTable'){renderScoreTable();}
 }
-
 function populateStoreDropdown(){
-  const sel=document.getElementById('storeName');
-  if(!sel||sel.tagName!=='SELECT')return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— Select Store —</option>';
+  const sel=document.getElementById('storeName');if(!sel||sel.tagName!=='SELECT')return;
+  const cur=sel.value;sel.innerHTML='<option value="">— Select Store —</option>';
   loadStores().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===cur)o.selected=true;sel.appendChild(o);});
 }
-
 function renderStoreTags(){
-  const stores=loadStores();
-  const cont=document.getElementById('storeTags');
-  if(!cont)return;
-  if(!stores.length){cont.innerHTML='<span class="store-empty">No stores yet. Add stores below.</span>';return;}
-  cont.innerHTML=stores.map((s,i)=>`<span class="store-tag">${esc(s)}<button onclick="removeStore(${i})" title="Remove">✕</button></span>`).join('');
+  const stores=loadStores();const cont=document.getElementById('storeTags');if(!cont)return;
+  if(!stores.length){cont.innerHTML='<span class="store-empty">No stores yet.</span>';return;}
+  cont.innerHTML=stores.map((s,i)=>`<span class="store-tag">${esc(s)}<button onclick="removeStore(${i})">✕</button></span>`).join('');
 }
-
 function bulkUploadStores(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
-    const text=e.target.result;
     let names=[];
-    text.split(/\r?\n/).forEach(line=>{line.split(',').forEach(n=>{const t=n.trim().replace(/^"|"$/g,'').trim();if(t)names.push(t);});});
-    if(!names.length){alert('No store names found in file.');return;}
+    e.target.result.split(/
+?
+/).forEach(line=>{line.split(',').forEach(n=>{const t=n.trim().replace(/^"|"$/g,'').trim();if(t)names.push(t);});});
+    if(!names.length){alert('No store names found.');return;}
     const merged=[...new Set([...loadStores(),...names])];
     saveStores(merged);renderStoreTags();populateStoreDropdown();
-    alert('✅ '+names.length+' stores uploaded! Total: '+merged.length+' stores.');
-    input.value='';
-  };
-  reader.readAsText(file);
+    alert('✅ '+names.length+' stores uploaded!');input.value='';
+  };reader.readAsText(file);
 }
-
 function clearAllStores(){if(!confirm('Clear ALL stores?'))return;saveStores([]);renderStoreTags();populateStoreDropdown();}
 function downloadSampleCSV(){
-  const blob=new Blob(['BIM - JP ROAD\nBLR - 4TH BLOCK JAYANAGAR\nBLR - KORAMANGALA\nBLR - WHITEFIELD\nBLR - HSR LAYOUT'],{type:'text/csv'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sample_stores.csv';
-  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['BIM - JP ROAD\nBLR - KORAMANGALA'],{type:'text/csv'}));a.download='sample_stores.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function addStore(){
-  const inp=document.getElementById('newStoreInput');
-  const name=(inp.value||'').trim();if(!name){inp.focus();return;}
-  const stores=loadStores();
-  if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){alert('Store "'+name+'" already exists.');return;}
-  stores.push(name);stores.sort((a,b)=>a.localeCompare(b));
-  saveStores(stores);inp.value='';renderStoreTags();populateStoreDropdown();inp.focus();
+  const inp=document.getElementById('newStoreInput');const name=(inp.value||'').trim();if(!name){inp.focus();return;}
+  const stores=loadStores();if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){alert('Store already exists.');return;}
+  stores.push(name);stores.sort((a,b)=>a.localeCompare(b));saveStores(stores);inp.value='';renderStoreTags();populateStoreDropdown();inp.focus();
 }
-function removeStore(idx){
-  const stores=loadStores();if(!confirm('Remove store "'+stores[idx]+'"?'))return;
-  stores.splice(idx,1);saveStores(stores);renderStoreTags();populateStoreDropdown();
-}
-
-// ═══ AUDIT FORM ═══
+function removeStore(idx){const stores=loadStores();if(!confirm('Remove "'+stores[idx]+'"?'))return;stores.splice(idx,1);saveStores(stores);renderStoreTags();populateStoreDropdown();}
 function renderForm(){
   const c=document.getElementById('secCont');c.innerHTML='';
   SECTIONS.forEach(sec=>{
@@ -636,24 +576,19 @@ function renderForm(){
       <div><div class="sec-name">${esc(sec.name)}</div><div class="sec-meta">${sec.items.length} clauses · Wt. Max: ${tWt}</div></div></div>
       <div style="display:flex;align-items:center;gap:10px"><div class="sec-pill" id="pill_${sec.id}">0 / ${tWt}</div><div class="chev">▼</div></div>
     </div>
-    <div class="sec-body"><table>
-      <thead><tr><th>#</th><th>Audit Clause</th><th>Risk</th><th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead>
-      <tbody id="tb_${sec.id}"></tbody>
-    </table></div>`;
+    <div class="sec-body"><table><thead><tr><th>#</th><th>Audit Clause</th><th>Risk</th><th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead><tbody id="tb_${sec.id}"></tbody></table></div>`;
     c.appendChild(div);
     const tb=document.getElementById('tb_'+sec.id);
     sec.items.forEach((item,idx)=>{
       const key=sec.id+'_'+idx;
       const rl={H:'<span class="risk rH">🔴 High</span>',M:'<span class="risk rM">🟡 Med</span>',L:'<span class="risk rL">🟢 Low</span>'}[item.risk]||item.risk;
       const tr=document.createElement('tr');
-      tr.innerHTML=`<td class="td-sno">${idx+1}</td><td class="td-clause">${esc(item.clause)}</td><td class="td-center">${rl}</td>
-        <td class="td-num">${item.wt}</td>
+      tr.innerHTML=`<td class="td-sno">${idx+1}</td><td class="td-clause">${esc(item.clause)}</td><td class="td-center">${rl}</td><td class="td-num">${item.wt}</td>
         <td class="td-rating"><div class="tog"><button id="b1_${key}" onclick="rate('${key}',1)">1</button><button id="bh_${key}" onclick="rate('${key}',0.5)">0.5</button><button id="b0_${key}" onclick="rate('${key}',0)">0</button><button id="bna_${key}" onclick="rate('${key}','na')">NA</button></div></td>
         <td class="td-obs"><textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" onchange="setObs('${key}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>`;
       tb.appendChild(tr);rfBtns(key);
     });
-  });
-  updateScores();
+  });updateScores();
 }
 function togSec(id){document.getElementById('sec_'+id).classList.toggle('closed')}
 function rate(k,v){if(!state[k])state[k]={rating:null,obs:''};state[k].rating=(v==='na'?'na':parseFloat(v));rfBtns(k);updateScores()}
@@ -684,7 +619,7 @@ function updateScores(){
 function doSubmit(){
   const unrated=[];
   SECTIONS.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const r=state[key]?.rating;if(r===null||r===undefined)unrated.push(sec.name+' → '+item.clause);});});
-  if(unrated.length>0){alert('⚠️ Please rate all clauses before saving!\n\nUnrated items ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));return;}
+  if(unrated.length>0){alert('⚠️ Please rate all clauses!\n\nUnrated ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));return;}
   const{tO,tM,pct,ss}=calcAll();
   const store=document.getElementById('storeName').value.trim()||'Unnamed Store';
   const period=document.getElementById('auditPeriod').value||'—';
@@ -701,20 +636,13 @@ function doSubmit(){
   document.getElementById('savedBanner').style.display='none';
   document.getElementById('modalOverlay').classList.add('show');
 }
-
 function saveRecord(){
   if(!pendingResult)return;
-  const recs=loadRecords();
-  const idx=recs.findIndex(r=>r.id===pendingResult.id);
+  const recs=loadRecords();const idx=recs.findIndex(r=>r.id===pendingResult.id);
   if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
-  saveRecordsLS(recs);
-  closeModal();
-  showView('scoreTable');
+  saveRecordsLS(recs);closeModal();showView('scoreTable');
 }
-
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
-
-// ═══ SCORE TABLE ═══
 function renderScoreTable(){
   const recs=loadRecords();
   const fm=document.getElementById('stblMonth')?.value||'';
@@ -726,63 +654,42 @@ function renderScoreTable(){
   else if(fz==='yellow')filtered=filtered.filter(r=>r.pct>=80&&r.pct<90);
   else if(fz==='red')filtered=filtered.filter(r=>r.pct<80);
   if(fs)filtered=filtered.filter(r=>(r.store||'').toLowerCase().includes(fs));
-  const total=recs.length;
-  const green=recs.filter(r=>r.pct>=90).length;
-  const yellow=recs.filter(r=>r.pct>=80&&r.pct<90).length;
-  const red=recs.filter(r=>r.pct<80).length;
+  const total=recs.length,green=recs.filter(r=>r.pct>=90).length,yellow=recs.filter(r=>r.pct>=80&&r.pct<90).length,red=recs.filter(r=>r.pct<80).length;
   document.getElementById('stblSummary').innerHTML=`
     <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--navy)">${total}</div><div class="stbl-sum-lbl">Total Audits</div></div>
     <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--green)">${green}</div><div class="stbl-sum-lbl">🟢 Green Zone</div></div>
     <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--amber)">${yellow}</div><div class="stbl-sum-lbl">🟡 Yellow Zone</div></div>
     <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--red)">${red}</div><div class="stbl-sum-lbl">🔴 Red Zone</div></div>`;
   const tbody=document.getElementById('stblBody');
-  if(!filtered.length){
-    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:50px;color:var(--muted);font-size:14px">${total===0?'No audits saved yet. Submit an audit to see scores here.':'No records match your filters.'}</td></tr>`;
-    return;
-  }
+  if(!filtered.length){tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:50px;color:var(--muted)">${total===0?'No audits yet.':'No records match.'}</td></tr>`;return;}
   tbody.innerHTML=filtered.map((rec,i)=>{
     const pc=rec.pct>=90?'var(--green)':rec.pct>=80?'var(--amber)':'var(--red)';
-    const{short,zone}=getRtg(rec.pct);
-    const zc=zone==='green'?'zone-g':zone==='yellow'?'zone-y':'zone-r';
-    return`<tr>
-      <td style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;width:44px">${i+1}</td>
+    const{short,zone}=getRtg(rec.pct);const zc=zone==='green'?'zone-g':zone==='yellow'?'zone-y':'zone-r';
+    return`<tr><td style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center">${i+1}</td>
       <td style="font-weight:600;color:var(--navy)">${esc(rec.store||'—')}</td>
       <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${esc(rec.period||'—')}</td>
-      <td style="font-family:var(--mono);font-weight:700;color:var(--navy);text-align:center">${rec.tO}</td>
+      <td style="font-family:var(--mono);font-weight:700;text-align:center">${rec.tO}</td>
       <td style="font-family:var(--mono);color:var(--muted);text-align:center">${rec.tM}</td>
       <td style="font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;color:${pc}">${rec.pct}%</td>
-      <td style="text-align:center"><span class="zone-badge ${zc}">${short}</span></td>
-    </tr>`;
+      <td style="text-align:center"><span class="zone-badge ${zc}">${short}</span></td></tr>`;
   }).join('');
 }
-
 function exportScoreCSV(){
-  const recs=loadRecords();
-  if(!recs.length){alert('No records to export.');return;}
+  const recs=loadRecords();if(!recs.length){alert('No records.');return;}
   let csv='#,Store Name,Month,Score Obtained,Max Score,Score %,Zone\n';
-  recs.forEach((r,i)=>{
-    const{short}=getRtg(r.pct);
-    csv+=(i+1)+',"'+(r.store||'').replace(/"/g,'""')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';
-  });
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ScoreSummary.csv';
-  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+  recs.forEach((r,i)=>{const{short}=getRtg(r.pct);csv+=(i+1)+',"'+(r.store||'').replace(/"/g,'""')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='ScoreSummary.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
-
-// ═══ RECORDS LIST ═══
 function renderRecords(){
   const search=(document.getElementById('searchInput')?.value||'').toLowerCase().trim();
-  const fm=document.getElementById('filterMonth')?.value||'';
-  const fz=document.getElementById('filterZone')?.value||'';
+  const fm=document.getElementById('filterMonth')?.value||'';const fz=document.getElementById('filterZone')?.value||'';
   let recs=loadRecords();
   if(fm)recs=recs.filter(r=>r.period===fm);
-  if(fz==='green')recs=recs.filter(r=>r.pct>=90);
-  else if(fz==='yellow')recs=recs.filter(r=>r.pct>=80&&r.pct<90);
-  else if(fz==='red')recs=recs.filter(r=>r.pct<80);
+  if(fz==='green')recs=recs.filter(r=>r.pct>=90);else if(fz==='yellow')recs=recs.filter(r=>r.pct>=80&&r.pct<90);else if(fz==='red')recs=recs.filter(r=>r.pct<80);
   if(search)recs=recs.filter(r=>(r.store||'').toLowerCase().includes(search));
   const el=document.getElementById('recordsList');
-  if(!loadRecords().length){el.innerHTML=`<div class="empty-state"><div class="ei">📭</div><p>No saved audits yet.</p></div>`;return;}
-  if(!recs.length){el.innerHTML=`<div class="empty-state"><div class="ei">🔍</div><p>No records match your search.</p></div>`;return;}
+  if(!loadRecords().length){el.innerHTML='<div class="empty-state"><div class="ei">📭</div><p>No saved audits yet.</p></div>';return;}
+  if(!recs.length){el.innerHTML='<div class="empty-state"><div class="ei">🔍</div><p>No records match.</p></div>';return;}
   const byMonth={};recs.forEach(r=>{const m=r.period||'Unknown';if(!byMonth[m])byMonth[m]=[];byMonth[m].push(r);});
   el.innerHTML='';
   [...MONTHS,'Unknown'].forEach(month=>{
@@ -799,54 +706,42 @@ function renderRecords(){
     });
   });
 }
-
 function editRecord(id){
   const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
   if(rec.sections)SECTIONS=JSON.parse(JSON.stringify(rec.sections));
-  editingId=id;
-  state=JSON.parse(JSON.stringify(rec.state));
-  populateStoreDropdown();
-  document.getElementById('storeName').value=rec.store||'';
-  document.getElementById('auditPeriod').value=rec.period||'';
+  editingId=id;state=JSON.parse(JSON.stringify(rec.state));
+  populateStoreDropdown();document.getElementById('storeName').value=rec.store||'';document.getElementById('auditPeriod').value=rec.period||'';
   renderForm();
   SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}}));
-  document.getElementById('editBanner').style.display='flex';
-  document.getElementById('submitBtn').textContent='Update & Save →';
+  document.getElementById('editBanner').style.display='flex';document.getElementById('submitBtn').textContent='Update & Save →';
   showView('form');window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelEdit(){
-  loadSections();editingId=null;state=freshState();
-  document.getElementById('editBanner').style.display='none';
-  document.getElementById('submitBtn').textContent='Submit & Save →';
-  document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';
-  renderForm();
+  loadSections();editingId=null;state=freshState();document.getElementById('editBanner').style.display='none';
+  document.getElementById('submitBtn').textContent='Submit & Save →';document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';renderForm();
 }
 function newAudit(){cancelEdit();showView('form');}
 function deleteRecord(id){if(!confirm('Delete this record?'))return;saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();}
-
-// ═══ CHECKLIST EDITOR ═══
 function renderEditor(){
   const cont=document.getElementById('editorSecs');cont.innerHTML='';
   SECTIONS.forEach((sec,si)=>{
     const secDiv=document.createElement('div');secDiv.className='esec';secDiv.id='esec_'+si;
     const totalWt=sec.items.reduce((a,x)=>a+(parseInt(x.wt)||0),0);
     secDiv.innerHTML=`<div class="esec-hdr">
-        <input class="esec-ico-input" type="text" value="${esc(sec.icon||'📋')}" placeholder="📋" oninput="SECTIONS[${si}].icon=this.value;updCedStats()" maxlength="4"/>
-        <input class="esec-name-input" type="text" value="${esc(sec.name)}" placeholder="Section name…" oninput="SECTIONS[${si}].name=this.value;updCedStats()"/>
-        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-right:4px">${sec.items.length} clauses · ${totalWt} pts</span>
-        <button class="btn-del-sec" onclick="deleteSection(${si})">🗑 Remove</button>
-      </div>
+      <input class="esec-ico-input" type="text" value="${esc(sec.icon||'📋')}" oninput="SECTIONS[${si}].icon=this.value;updCedStats()" maxlength="4"/>
+      <input class="esec-name-input" type="text" value="${esc(sec.name)}" oninput="SECTIONS[${si}].name=this.value;updCedStats()"/>
+      <span style="font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-right:4px">${sec.items.length} clauses · ${totalWt} pts</span>
+      <button class="btn-del-sec" onclick="deleteSection(${si})">🗑 Remove</button></div>
       <div class="eclauses" id="ecl_${si}">
         <div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>
         ${sec.items.map((item,ci)=>clauseRowHTML(si,ci,item)).join('')}
         <button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>
       </div>`;
     cont.appendChild(secDiv);
-  });
-  updCedStats();
+  });updCedStats();
 }
 function clauseRowHTML(si,ci,item){
-  return`<div class="eclause-row" id="erow_${si}_${ci}">
+  return`<div class="eclause-row">
     <input type="text" value="${esc(item.clause)}" placeholder="Enter audit clause…" oninput="SECTIONS[${si}].items[${ci}].clause=this.value;updCedStats()"/>
     <select onchange="SECTIONS[${si}].items[${ci}].risk=this.value;updCedStats()">
       <option value="H"${item.risk==='H'?' selected':''}>🔴 High</option>
@@ -854,24 +749,22 @@ function clauseRowHTML(si,ci,item){
       <option value="L"${item.risk==='L'?' selected':''}>🟢 Low</option>
     </select>
     <input type="number" min="1" max="20" value="${item.wt||5}" oninput="SECTIONS[${si}].items[${ci}].wt=parseInt(this.value)||1;updCedStats()"/>
-    <button class="btn-del-clause" onclick="deleteClause(${si},${ci})" title="Remove">✕</button>
+    <button class="btn-del-clause" onclick="deleteClause(${si},${ci})">✕</button>
   </div>`;
 }
-function addSection(){SECTIONS.push({id:'sec_'+Date.now(),name:'New Section',icon:'📋',items:[{clause:'',risk:'M',wt:5}]});renderEditor();setTimeout(()=>{const el=document.getElementById('esec_'+(SECTIONS.length-1));if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},100);}
-function deleteSection(si){if(!confirm('Remove section "'+SECTIONS[si].name+'" and all its clauses?'))return;SECTIONS.splice(si,1);renderEditor();}
+function addSection(){SECTIONS.push({id:'sec_'+Date.now(),name:'New Section',icon:'📋',items:[{clause:'',risk:'M',wt:5}]});renderEditor();}
+function deleteSection(si){if(!confirm('Remove section "'+SECTIONS[si].name+'"?'))return;SECTIONS.splice(si,1);renderEditor();}
 function addClause(si){
   SECTIONS[si].items.push({clause:'',risk:'M',wt:5});
   const cont=document.getElementById('ecl_'+si);
-  cont.innerHTML=`<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>`+SECTIONS[si].items.map((item,ci)=>clauseRowHTML(si,ci,item)).join('')+`<button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>`;
+  cont.innerHTML='<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>'+SECTIONS[si].items.map((item,ci)=>clauseRowHTML(si,ci,item)).join('')+'<button class="btn-add-clause" onclick="addClause('+si+')">＋ Add Clause</button>';
   updCedStats();
-  setTimeout(()=>{const rows=cont.querySelectorAll('.eclause-row');if(rows.length){const inp=rows[rows.length-1].querySelector('input[type=text]');if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}}},50);
 }
 function deleteClause(si,ci){
   if(SECTIONS[si].items.length<=1){alert('A section must have at least one clause.');return;}
-  if(!confirm('Remove this clause?'))return;
-  SECTIONS[si].items.splice(ci,1);
+  if(!confirm('Remove this clause?'))return;SECTIONS[si].items.splice(ci,1);
   const cont=document.getElementById('ecl_'+si);
-  cont.innerHTML=`<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>`+SECTIONS[si].items.map((item,ci2)=>clauseRowHTML(si,ci2,item)).join('')+`<button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>`;
+  cont.innerHTML='<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>'+SECTIONS[si].items.map((item,ci2)=>clauseRowHTML(si,ci2,item)).join('')+'<button class="btn-add-clause" onclick="addClause('+si+')">＋ Add Clause</button>';
   updCedStats();
 }
 function updCedStats(){
@@ -880,53 +773,126 @@ function updCedStats(){
 }
 function saveChecklist(){
   let empty=false;SECTIONS.forEach(sec=>sec.items.forEach(item=>{if(!item.clause.trim())empty=true;}));
-  if(empty){alert('Please fill in all clause text before saving.');return;}
-  if(!SECTIONS.length){alert('You must have at least one section.');return;}
-  persistSections();state=freshState();
-  const f=document.getElementById('cedFlash');f.style.display='block';setTimeout(()=>f.style.display='none',2500);
+  if(empty){alert('Please fill in all clause text.');return;}if(!SECTIONS.length){alert('Need at least one section.');return;}
+  persistSections();state=freshState();const f=document.getElementById('cedFlash');f.style.display='block';setTimeout(()=>f.style.display='none',2500);
 }
 function resetChecklist(){
-  if(!confirm('Reset checklist to default? All custom changes will be lost.'))return;
-  localStorage.removeItem('ahm_checklist');loadSections();renderEditor();state=freshState();
+  if(!confirm('Reset to default?'))return;localStorage.removeItem('ahm_checklist');loadSections();renderEditor();state=freshState();
 }
-
-// ═══ EXPORT ═══
 function showLoad(t,s){document.getElementById('loadingTxt').textContent=t;document.getElementById('loadingSub').textContent=s||'Please wait…';document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoad(){document.getElementById('loadingOverlay').classList.remove('show');}
 function getSelMonth(){const m=document.getElementById('exportMonth').value;if(!m){alert('Please select a month.');return null;}return m;}
-function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records found for '+m+'.');return null;}return r;}
+function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records for '+m+'.');return null;}return r;}
 
 function buildStoreHTMLBlob(rec,month){
   const{short}=getRtg(rec.pct);
   const sc=rec.pct>=90?'#059669':rec.pct>=80?'#d97706':'#dc2626';
   const riskLabel={H:'High Risk',M:'Medium Risk',L:'Low Risk'};
+  const riskBg={H:'#fef2f2',M:'#fffbeb',L:'#f0fdf4'};
+  const riskColor={H:'#dc2626',M:'#d97706',L:'#059669'};
   const recSections=rec.sections||SECTIONS;
   let bdRows='';
-  rec.ss.forEach(s=>{const sp=s.max>0?Math.round(s.obt/s.max*100):0;const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';bdRows+=`<tr><td>${esc(s.name)}</td><td style="text-align:center">${s.obt} / ${s.max}</td><td style="text-align:center;color:${bc};font-weight:700">${sp}%</td></tr>`;});
+  rec.ss.forEach(s=>{
+    const sp=s.max>0?Math.round(s.obt/s.max*100):0;
+    const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';
+    bdRows+=`<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5">${esc(s.name)}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center;font-weight:700">${s.obt}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center">${s.max}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center;font-weight:700;color:${bc}">${sp}%</td></tr>`;
+  });
   let detRows='';
   recSections.forEach(sec=>{
     let sO=0,sM=0;
     sec.items.forEach((item,idx)=>{const r=rec.state[sec.id+'_'+idx]?.rating;if(r!=='na'&&r!==null&&r!==undefined){sM+=item.wt;if(r===1)sO+=item.wt;else if(r===0.5)sO+=item.wt*0.5;}});
-    detRows+=`<tr style="background:#f0f4f8"><td colspan="5" style="font-weight:700;font-size:12px;color:#1e3a5f;padding:7px 10px">${sec.icon||''} ${esc(sec.name)} <span style="font-weight:400;color:#64748b">(${sO}/${sM} pts)</span></td></tr>`;
+    detRows+=`<tr><td colspan="6" style="background:linear-gradient(90deg,#f0f4f8,#e8f0fb);padding:10px 12px;font-weight:700;font-size:12px;color:#1e3a5f;border-top:2px solid #dde3ed"><span style="margin-right:6px">${sec.icon||''}</span>${esc(sec.name)}<span style="font-weight:400;color:#64748b;margin-left:8px">(${sO} / ${sM} pts)</span></td></tr>`;
     sec.items.forEach((item,idx)=>{
-      const r=rec.state[sec.id+'_'+idx]?.rating;const obs=rec.state[sec.id+'_'+idx]?.obs||'';
-      const rd=r===null?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
-      const rc=r===1?'#059669':r===0?'#dc2626':'#94a3b8';
-      detRows+=`<tr><td style="text-align:center;color:#94a3b8;width:28px">${idx+1}</td><td style="font-size:11px;line-height:1.5">${esc(item.clause)}</td><td style="text-align:center;font-size:11px">${riskLabel[item.risk]||item.risk}</td><td style="text-align:center;font-weight:700;color:${rc}">${rd}</td><td style="font-size:11px;color:#64748b">${esc(obs)}</td></tr>`;
+      const r=rec.state[sec.id+'_'+idx]?.rating;
+      const obs=rec.state[sec.id+'_'+idx]?.obs||'';
+      const rd=r===null||r===undefined?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
+      const rdBg=r===1?'#059669':r===0?'#dc2626':r===0.5?'#f59e0b':'#94a3b8';
+      const rb=riskBg[item.risk]||'#f8fafc';
+      const rc=riskColor[item.risk]||'#64748b';
+      const rl=riskLabel[item.risk]||item.risk;
+      detRows+=`<tr style="border-bottom:1px solid #f0f2f5">
+        <td style="padding:8px 12px;text-align:center;font-size:11px;color:#94a3b8;width:32px">${idx+1}</td>
+        <td style="padding:8px 12px;font-size:11.5px;line-height:1.6;max-width:340px">${esc(item.clause)}</td>
+        <td style="padding:8px 12px;text-align:center;white-space:nowrap"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:${rb};color:${rc};border:1px solid ${rc}40">${rl}</span></td>
+        <td style="padding:8px 12px;text-align:center;font-weight:600;color:#1e3a5f">${item.wt}</td>
+        <td style="padding:8px 12px;text-align:center"><span style="display:inline-block;min-width:28px;height:28px;line-height:28px;border-radius:6px;background:${rdBg};color:#fff;font-weight:700;font-size:13px;text-align:center;padding:0 6px">${rd}</span></td>
+        <td style="padding:8px 12px;font-size:11px;color:#64748b;min-width:140px">${esc(obs)||'—'}</td>
+      </tr>`;
     });
   });
   const dateStr=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
-  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
-<style>@media print{.no-print{display:none!important}@page{margin:15mm}}body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;margin:0;padding:0;background:#f8fafc;font-size:12px}.page{max-width:900px;margin:0 auto;padding:20px;background:#fff}.hdr-bar{background:linear-gradient(135deg,#0f1f3d,#1a3260);color:#fff;padding:16px 22px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}.hdr-bar h1{font-size:17px;margin:0;font-weight:700}.hdr-bar p{font-size:10px;opacity:.6;margin:3px 0 0}.print-btn{padding:7px 16px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}.score-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:16px 22px;margin-bottom:16px;gap:16px;flex-wrap:wrap}.store-name{font-size:20px;font-weight:800;color:#0f1f3d}.period-lbl{font-size:12px;color:#64748b;margin-top:3px}.score-badge{text-align:center;background:#fff;border-radius:10px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}.score-pct{font-size:36px;font-weight:800;color:${sc}}.score-zone{font-size:12px;font-weight:700;color:${sc};margin-top:2px}.score-pts{font-size:10px;color:#64748b;margin-top:2px}.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:700;margin:16px 0 8px;display:flex;align-items:center;gap:8px}.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e2e8f0}th{background:#f0f4f8;padding:8px 11px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;text-align:left;font-weight:600}td{padding:8px 11px;border-bottom:1px solid #f0f2f5;vertical-align:top}tr:last-child td{border-bottom:none}.footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}</style></head><body>
+  const zoneBg=rec.pct>=90?'#d1fae5':rec.pct>=80?'#fef9c3':'#fee2e2';
+  const zoneColor=rec.pct>=90?'#065f46':rec.pct>=80?'#713f12':'#7f1d1d';
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+<title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
+<style>
+@media print{.no-print{display:none!important}@page{margin:12mm;size:A4 landscape}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;background:#f8fafc;font-size:12px}
+.page{max-width:1050px;margin:0 auto;padding:20px;background:#fff}
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(135deg,#0f1f3d,#1a3260);border-radius:10px;margin-bottom:16px;color:#fff}
+.logo-img{height:34px;background:#fff;border-radius:5px;padding:3px 8px}
+.hdr-text h1{font-size:15px;font-weight:700;margin:0}
+.hdr-text p{font-size:10px;opacity:.6;margin:2px 0 0}
+.print-btn{padding:6px 14px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer}
+.score-card{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:14px 20px;margin-bottom:14px}
+.store-name{font-size:20px;font-weight:800;color:#0f1f3d}
+.meta{font-size:11px;color:#64748b;margin-top:3px}
+.score-box{text-align:center;background:#fff;border-radius:8px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}
+.score-pct{font-size:38px;font-weight:800;color:${sc};line-height:1}
+.score-zone{display:inline-block;margin-top:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${zoneBg};color:${zoneColor}}
+.score-pts{font-size:10px;color:#64748b;margin-top:3px}
+.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.sum-card{background:#fff;border:1px solid #dde3ed;border-radius:8px;padding:10px 14px;text-align:center}
+.sum-val{font-size:20px;font-weight:800;font-family:monospace;line-height:1}
+.sum-lbl{font-size:9px;color:#64748b;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
+.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#1d4ed8;font-weight:700;margin:16px 0 7px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}
+table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e2e8f0}
+.tbl-hdr th{background:linear-gradient(90deg,#f0f4f8,#e8f0fb);padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#1e3a5f;text-align:left;font-weight:700;border-bottom:2px solid #dde3ed}
+.footer{margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+</style></head><body>
 <div class="page">
-<div class="hdr-bar"><div><h1>🏪 Operation Scorecard</h1><p>Store Operations Audit Report</p></div><div><button class="print-btn no-print" onclick="window.print()">🖨 Print / Save PDF</button></div></div>
-<div class="score-card"><div><div class="store-name">${esc(rec.store||'Unnamed Store')}</div><div class="period-lbl">📅 Audit Period: ${rec.period||'—'}</div><div class="period-lbl">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div></div>
-<div class="score-badge"><div class="score-pct">${rec.pct}%</div><div class="score-zone">${short}</div><div class="score-pts">${rec.tO} / ${rec.tM} pts</div></div></div>
+<div class="header">
+  <div style="display:flex;align-items:center;gap:12px">
+    <img class="logo-img" src="data:image/png;base64,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" alt="Kushals"/>
+    <div class="hdr-text"><h1>Operation Scorecard</h1><p>Store Operations Audit Report</p></div>
+  </div>
+  <div class="no-print" style="display:flex;align-items:center;gap:10px">
+    <span style="font-size:10px;opacity:.65">Generated: ${dateStr}</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  </div>
+</div>
+<div class="score-card">
+  <div>
+    <div class="store-name">${esc(rec.store||'Unnamed Store')}</div>
+    <div class="meta">📅 Audit Period: <strong>${rec.period||'—'}</strong></div>
+    <div class="meta">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
+  </div>
+  <div class="score-box">
+    <div class="score-pct">${rec.pct}%</div>
+    <div class="score-zone">${short}</div>
+    <div class="score-pts">${rec.tO} / ${rec.tM} pts</div>
+  </div>
+</div>
+<div class="summary-grid">
+  <div class="sum-card"><div class="sum-val" style="color:#1d4ed8">${rec.tO}</div><div class="sum-lbl">Score Obtained</div></div>
+  <div class="sum-card"><div class="sum-val" style="color:#1e3a5f">${rec.tM}</div><div class="sum-lbl">Max Score</div></div>
+  <div class="sum-card"><div class="sum-val" style="color:${sc}">${rec.pct}%</div><div class="sum-lbl">Score %</div></div>
+  <div class="sum-card"><div class="sum-val" style="font-size:13px;padding-top:4px;color:${zoneColor}">${short}</div><div class="sum-lbl">Zone</div></div>
+</div>
 <div class="sec-title">Section-wise Breakdown</div>
-<table><thead><tr><th>Section</th><th style="text-align:center">Score</th><th style="text-align:center">%</th></tr></thead><tbody>${bdRows}</tbody></table>
+<table><thead class="tbl-hdr"><tr><th>Section</th><th style="text-align:center">Score Obtained</th><th style="text-align:center">Max Score</th><th style="text-align:center">Score %</th></tr></thead><tbody>${bdRows}</tbody></table>
 <div class="sec-title">Detailed Audit Responses</div>
-<table><thead><tr><th style="width:28px">#</th><th>Audit Clause</th><th style="text-align:center">Risk</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead><tbody>${detRows}</tbody></table>
-<div class="footer"><span>Operation Scorecard System</span><span>© ${new Date().getFullYear()} AHM Operations</span></div>
+<table><thead class="tbl-hdr"><tr>
+  <th style="width:32px;text-align:center">#</th>
+  <th>Audit Clause</th>
+  <th style="text-align:center">Risk</th>
+  <th style="text-align:center">Wt.Max</th>
+  <th style="text-align:center">Rating</th>
+  <th>Observation</th>
+</tr></thead><tbody>${detRows}</tbody></table>
+<div class="footer"><span>Kushals Retail · Operation Scorecard</span><span>© ${new Date().getFullYear()} Kushals Retail</span></div>
 </div></body></html>`;
 }
 
@@ -939,36 +905,24 @@ function exportAllPDF(){
     catch(e){hideLoad();alert('Error: '+e.message);}
   },200);
 }
-
 function exportAllExcel(){
-  const month=document.getElementById('exportMonth').value;
-  if(!month){alert('Please select a month first.');return;}
-  const recs=loadRecords().filter(r=>r.period===month);
-  if(!recs.length){alert('No records found for '+month+'.');return;}
+  const month=document.getElementById('exportMonth').value;if(!month){alert('Please select a month.');return;}
+  const recs=loadRecords().filter(r=>r.period===month);if(!recs.length){alert('No records for '+month+'.');return;}
   let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
   recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
   csv+='\n\nDetailed Responses\nStore,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
-  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{const items=sec.items||[];items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
-  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='OpScorecard_'+month+'.csv';
-  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='OpScorecard_'+month+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
-
 function downloadSingleReport(id){
   const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
   const html=buildStoreHTMLBlob(rec,rec.period||'Report');
-  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'}));
   a.download='OpScorecard_'+(rec.period||'Report')+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
   document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
-
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-
-loadSections();
-state=freshState();
-populateStoreDropdown();
-renderForm();
+loadSections();state=freshState();populateStoreDropdown();renderForm();
 </script>
 </body>
 </html>
