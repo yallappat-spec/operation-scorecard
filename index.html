@@ -4,8 +4,6 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Operation Scorecard</title>
-
-
 <style>
 :root{--navy:#0f1f3d;--navy2:#1a3260;--blue:#1d4ed8;--blue2:#3b82f6;--green:#059669;--red:#dc2626;--amber:#d97706;--bg:#eef2f8;--card:#fff;--border:#dde3ed;--text:#1e2a3a;--muted:#64748b;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;--mono:'Courier New',Courier,monospace}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -23,9 +21,8 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text)}
 .btn-hdr-gold:hover{background:rgba(245,158,11,.35)}
 .btn-hdr-teal{background:rgba(20,184,166,.2);border-color:rgba(20,184,166,.4);color:#99f6e4}
 .btn-hdr-teal:hover{background:rgba(20,184,166,.35)}
-.btn-hdr-indigo{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#c7d2fe}
-.btn-hdr-indigo:hover{background:rgba(99,102,241,.4)}
-
+.btn-hdr-green{background:rgba(5,150,105,.25);border-color:rgba(5,150,105,.4);color:#6ee7b7}
+.btn-hdr-green:hover{background:rgba(5,150,105,.4)}
 .view{display:none}.view.active{display:block}
 .wrap{max-width:1200px;margin:0 auto;padding:24px 16px 90px}
 .instr{background:linear-gradient(90deg,#eff6ff,#f0fdf4);border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px}
@@ -96,6 +93,36 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .sub-btn:hover{opacity:.9}
 .edit-banner{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:11px 16px;font-size:13px;color:#78350f;font-weight:500;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
 .btn-cancel-edit{padding:6px 14px;background:#fff;color:#78350f;border:1px solid #fde68a;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer}
+
+/* ── SCORE TABLE ── */
+.stbl-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+.stbl-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.stbl-title{font-size:20px;font-weight:700;color:var(--navy)}
+.stbl-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stbl-sum-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 20px;text-align:center}
+.stbl-sum-val{font-size:28px;font-weight:800;font-family:var(--mono);line-height:1}
+.stbl-sum-lbl{font-size:11px;color:var(--muted);margin-top:5px;letter-spacing:.4px}
+.stbl-filter{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.stbl-filter select,.stbl-filter input{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;background:#fafbfc;outline:none;min-width:150px}
+.stbl-filter select:focus,.stbl-filter input:focus{border-color:var(--blue2);background:#fff}
+.filter-lbl{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.stbl-card{background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.stbl-table{width:100%;border-collapse:collapse;min-width:600px}
+.stbl-table thead tr{background:linear-gradient(90deg,#f0f4f8,#e8f0fb);border-bottom:2px solid var(--border)}
+.stbl-table th{padding:11px 16px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--navy2);text-align:left;white-space:nowrap}
+.stbl-table tbody tr{border-bottom:1px solid #f0f2f5;transition:background .1s}
+.stbl-table tbody tr:last-child{border-bottom:none}
+.stbl-table tbody tr:hover{background:#f8faff}
+.stbl-table td{padding:12px 16px;font-size:13px;vertical-align:middle}
+.zone-badge{display:inline-flex;align-items:center;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700}
+.zone-g{background:#d1fae5;color:#065f46}
+.zone-y{background:#fef9c3;color:#713f12}
+.zone-r{background:#fee2e2;color:#7f1d1d}
+.btn-exp-green{padding:9px 18px;background:#059669;color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.btn-exp-green:hover{opacity:.88}
+.btn-new-audit{padding:9px 18px;background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+
+/* ── RECORDS ── */
 .rec-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
 .rec-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
 .rec-title{font-size:20px;font-weight:700;color:var(--navy)}
@@ -104,7 +131,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .ep-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .ep-label{font-size:13px;font-weight:700;color:var(--navy2);white-space:nowrap}
 .ep-select{padding:8px 12px;border:1.5px solid #bfdbfe;border-radius:8px;font-family:var(--sans);font-size:13px;background:#fff;outline:none;min-width:160px}
-.btn-exp{padding:9px 20px;color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-exp{padding:9px 20px;color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 .btn-exp:hover{opacity:.88}
 .btn-exp-pdf{background:#dc2626}.btn-exp-xl{background:#059669}
 .ep-hint{font-size:11.5px;color:var(--muted);margin-top:9px}
@@ -113,7 +140,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
 .search-wrap input{width:100%;padding:8px 11px 8px 32px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;outline:none;background:#fafbfc}
 .search-wrap input:focus{border-color:var(--blue2);background:#fff}
-.filter-lbl{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
 .filter-bar select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;background:#fafbfc;outline:none;min-width:150px}
 .empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
 .empty-state .ei{font-size:48px;margin-bottom:12px}
@@ -127,10 +153,11 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .rc-pct{font-size:24px;font-weight:800;font-family:var(--mono)}
 .rc-tag{padding:4px 12px;border-radius:8px;font-size:11.5px;font-weight:700}
 .rc-btns{display:flex;gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid #f0f2f5;flex-wrap:wrap}
-.btn-sm{padding:6px 14px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-sm{padding:6px 14px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
 .btn-edit-sm{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
 .btn-del-sm{background:#f8fafc;color:var(--muted);border:1px solid var(--border);margin-left:auto}
-/* CHECKLIST EDITOR */
+
+/* ── EDITOR ── */
 .ced-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
 .ced-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:12px;flex-wrap:wrap}
 .ced-title{font-size:20px;font-weight:700;color:var(--navy)}
@@ -161,7 +188,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .ced-stats strong{color:var(--navy)}
 .btn-save-checklist{padding:11px 28px;background:linear-gradient(135deg,#059669,#065f46);color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
 .saved-flash{background:#d1fae5;color:#065f46;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;display:none}
-/* STORE LIST */
 .slist-wrap{margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .slist-hdr{background:linear-gradient(90deg,#f0f9ff,#eff6ff);padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .slist-title{font-size:13.5px;font-weight:700;color:var(--navy)}
@@ -175,7 +201,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .store-add-row input:focus{border-color:var(--blue2);background:#fff}
 .btn-add-store{padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .store-empty{font-size:13px;color:var(--muted);font-style:italic}
-/* LOADING */
 .loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,.65);z-index:500;align-items:center;justify-content:center}
 .loading-overlay.show{display:flex}
 .loading-box{background:#fff;border-radius:16px;padding:32px 48px;text-align:center}
@@ -183,7 +208,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-txt{font-size:15px;font-weight:700;color:var(--navy)}
 .loading-sub{font-size:12px;color:var(--muted);margin-top:5px}
-/* MODAL */
 .overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,.6);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:16px}
 .overlay.show{display:flex}
 .modal{background:#fff;border-radius:20px;padding:32px 36px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto}
@@ -208,8 +232,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .btn-save{padding:10px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .btn-close{padding:10px 22px;background:#f0f4f8;color:var(--navy);border:1px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .saved-banner{background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:10px 16px;font-size:13px;color:#065f46;font-weight:600;text-align:center;margin-bottom:14px;display:none}
-
-@media(max-width:600px){.sp{flex-direction:column}.sub-btn{width:100%;text-align:center}.meta-grid{grid-template-columns:1fr 1fr}.modal,.gas-modal{padding:22px 16px}.bs-num{font-size:48px}.eclause-row{grid-template-columns:1fr;gap:6px}}
+@media(max-width:600px){.sp{flex-direction:column}.sub-btn{width:100%;text-align:center}.meta-grid{grid-template-columns:1fr 1fr}.modal{padding:22px 16px}.bs-num{font-size:48px}.eclause-row{grid-template-columns:1fr;gap:6px}.stbl-summary{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
@@ -226,6 +249,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
   <div class="hdr-right">
     <div class="hdr-note">1 = Adhered · 0 = Deviation · NA = Not Applicable</div>
+    <button class="btn-hdr btn-hdr-green" onclick="showView('scoreTable')">📊 Score Table</button>
     <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
   </div>
@@ -284,6 +308,55 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 </div>
 </div>
 
+<!-- SCORE TABLE VIEW -->
+<div id="viewScoreTable" class="view">
+<div class="stbl-wrap">
+  <div class="stbl-top">
+    <div class="stbl-title">📊 Score Summary Table</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn-exp-green" onclick="exportScoreCSV()">📥 Export to Excel (CSV)</button>
+      <button class="btn-new-audit" onclick="newAudit()">+ New Audit</button>
+    </div>
+  </div>
+  <div class="stbl-summary" id="stblSummary"></div>
+  <div class="stbl-filter">
+    <span class="filter-lbl">Filter by Month:</span>
+    <select id="stblMonth" onchange="renderScoreTable()">
+      <option value="">All Months</option>
+      <option>January</option><option>February</option><option>March</option><option>April</option>
+      <option>May</option><option>June</option><option>July</option><option>August</option>
+      <option>September</option><option>October</option><option>November</option><option>December</option>
+    </select>
+    <span class="filter-lbl">Filter by Zone:</span>
+    <select id="stblZone" onchange="renderScoreTable()">
+      <option value="">All Zones</option>
+      <option value="green">🟢 Green Zone (≥90%)</option>
+      <option value="yellow">🟡 Yellow Zone (80-89%)</option>
+      <option value="red">🔴 Red Zone (&lt;80%)</option>
+    </select>
+    <input id="stblSearch" placeholder="Search store…" oninput="renderScoreTable()"/>
+  </div>
+  <div class="stbl-card">
+    <div style="overflow-x:auto">
+      <table class="stbl-table">
+        <thead>
+          <tr>
+            <th style="width:44px;text-align:center">#</th>
+            <th>Store Name</th>
+            <th>Month</th>
+            <th style="text-align:center">Score Obtained</th>
+            <th style="text-align:center">Max Score</th>
+            <th style="text-align:center">Score %</th>
+            <th style="text-align:center">Zone</th>
+          </tr>
+        </thead>
+        <tbody id="stblBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- RECORDS VIEW -->
 <div id="viewRecords" class="view">
 <div class="rec-wrap">
@@ -303,7 +376,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <button class="btn-exp btn-exp-pdf" onclick="exportAllPDF()">📄 Download Reports</button>
       <button class="btn-exp btn-exp-xl" onclick="exportAllExcel()">📊 Download CSV (Excel)</button>
     </div>
-    <div class="ep-hint">Select a month → Download Reports saves one HTML report per store · Download CSV saves all stores in one file (opens in Excel).</div>
+    <div class="ep-hint">Select a month → Download Reports saves one HTML report per store · Download CSV saves all stores in one file.</div>
   </div>
   <div class="filter-bar">
     <div class="search-wrap">
@@ -352,13 +425,13 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <div class="store-add-row">
         <input id="newStoreInput" placeholder="Type store name and press Add or Enter…" onkeydown="if(event.key==='Enter')addStore()"/>
         <button class="btn-add-store" onclick="addStore()">＋ Add Store</button>
-        <label class="btn-add-store" style="background:#0f766e;cursor:pointer;margin-left:4px" title="Upload CSV file with one store name per line">
+        <label class="btn-add-store" style="background:#0f766e;cursor:pointer;margin-left:4px">
           📂 Bulk Upload CSV
           <input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadStores(this)"/>
         </label>
         <button class="btn-add-store" style="background:#dc2626" onclick="clearAllStores()">🗑 Clear All</button>
       </div>
-      <div style="font-size:11px;color:var(--muted);margin-top:6px">📋 CSV format: one store name per line (or comma separated). <a href="#" onclick="downloadSampleCSV();return false;" style="color:var(--blue)">Download sample CSV</a></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">📋 CSV format: one store name per line. <a href="#" onclick="downloadSampleCSV();return false;" style="color:var(--blue)">Download sample CSV</a></div>
     </div>
   </div>
   <div class="ced-save-bar">
@@ -393,9 +466,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <button class="btn-save" onclick="saveRecord()">💾 Save Record</button>
       <button class="btn-close" onclick="closeModal()">✕ Close</button>
     </div>
-  </div>
-</div>
-
   </div>
 </div>
 
@@ -479,11 +549,7 @@ let SECTIONS=[];
 function loadSections(){
   try{
     const ver=localStorage.getItem('ahm_checklist_ver');
-    if(ver!=='v2'){
-      // Force reset to new default on version mismatch
-      localStorage.removeItem('ahm_checklist');
-      localStorage.setItem('ahm_checklist_ver','v2');
-    }
+    if(ver!=='v2'){localStorage.removeItem('ahm_checklist');localStorage.setItem('ahm_checklist_ver','v2');}
     const s=localStorage.getItem('ahm_checklist');
     SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
   }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
@@ -505,6 +571,7 @@ function showView(v){
   if(v==='records')renderRecords();
   if(v==='editor'){renderEditor();renderStoreTags();}
   if(v==='form'){populateStoreDropdown();}
+  if(v==='scoreTable'){renderScoreTable();}
 }
 
 function populateStoreDropdown(){
@@ -523,70 +590,42 @@ function renderStoreTags(){
   cont.innerHTML=stores.map((s,i)=>`<span class="store-tag">${esc(s)}<button onclick="removeStore(${i})" title="Remove">✕</button></span>`).join('');
 }
 
-
 function bulkUploadStores(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
   reader.onload=function(e){
     const text=e.target.result;
-    // Support both newline and comma separated
     let names=[];
-    const lines=text.split(/\r?\n/);
-    lines.forEach(line=>{
-      // each line could be comma separated too
-      line.split(',').forEach(n=>{
-        const trimmed=n.trim().replace(/^"|"$/g,'').trim();
-        if(trimmed)names.push(trimmed);
-      });
-    });
+    text.split(/\r?\n/).forEach(line=>{line.split(',').forEach(n=>{const t=n.trim().replace(/^"|"$/g,'').trim();if(t)names.push(t);});});
     if(!names.length){alert('No store names found in file.');return;}
-    const existing=loadStores();
-    // merge, no duplicates
-    const merged=[...new Set([...existing,...names])];
-    saveStores(merged);
-    renderStoreTags();
-    populateStoreDropdown();
+    const merged=[...new Set([...loadStores(),...names])];
+    saveStores(merged);renderStoreTags();populateStoreDropdown();
     alert('✅ '+names.length+' stores uploaded! Total: '+merged.length+' stores.');
     input.value='';
   };
   reader.readAsText(file);
 }
 
-function clearAllStores(){
-  if(!confirm('Are you sure you want to clear ALL stores?'))return;
-  saveStores([]);
-  renderStoreTags();
-  populateStoreDropdown();
-}
-
+function clearAllStores(){if(!confirm('Clear ALL stores?'))return;saveStores([]);renderStoreTags();populateStoreDropdown();}
 function downloadSampleCSV(){
-  const sample='BIM - JP ROAD\nBLR - 4TH BLOCK JAYANAGAR\nBLR - KORAMANGALA\nBLR - WHITEFIELD\nBLR - HSR LAYOUT';
-  const blob=new Blob([sample],{type:'text/csv'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download='sample_stores.csv';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  const blob=new Blob(['BIM - JP ROAD\nBLR - 4TH BLOCK JAYANAGAR\nBLR - KORAMANGALA\nBLR - WHITEFIELD\nBLR - HSR LAYOUT'],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='sample_stores.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
-
 function addStore(){
   const inp=document.getElementById('newStoreInput');
-  const name=(inp.value||'').trim();
-  if(!name){inp.focus();return;}
+  const name=(inp.value||'').trim();if(!name){inp.focus();return;}
   const stores=loadStores();
   if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){alert('Store "'+name+'" already exists.');return;}
   stores.push(name);stores.sort((a,b)=>a.localeCompare(b));
   saveStores(stores);inp.value='';renderStoreTags();populateStoreDropdown();inp.focus();
-
 }
-
 function removeStore(idx){
-  const stores=loadStores();
-  if(!confirm('Remove store "'+stores[idx]+'"?'))return;
+  const stores=loadStores();if(!confirm('Remove store "'+stores[idx]+'"?'))return;
   stores.splice(idx,1);saveStores(stores);renderStoreTags();populateStoreDropdown();
 }
 
-// ═══════════════ AUDIT FORM ═══════════════
+// ═══ AUDIT FORM ═══
 function renderForm(){
   const c=document.getElementById('secCont');c.innerHTML='';
   SECTIONS.forEach(sec=>{
@@ -632,7 +671,7 @@ function calcAll(){
   let ar=0,tot=0;SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{tot++;if(state[sec.id+'_'+i]?.rating!==null&&state[sec.id+'_'+i]?.rating!==undefined)ar++;}));
   tO=Math.round(tO*10)/10;return{tO,tM,pct:tM>0?Math.round(tO/tM*100):0,ar,tot,ss};
 }
-function getRtg(p){if(p>=90)return{lbl:'🟢 Green Zone',cls:'rA',short:'Green Zone'};if(p>=80)return{lbl:'🟡 Yellow Zone',cls:'rB',short:'Yellow Zone'};return{lbl:'🔴 Red Zone',cls:'rC',short:'Red Zone'};}
+function getRtg(p){if(p>=90)return{lbl:'🟢 Green Zone',cls:'rA',short:'Green Zone',zone:'green'};if(p>=80)return{lbl:'🟡 Yellow Zone',cls:'rB',short:'Yellow Zone',zone:'yellow'};return{lbl:'🔴 Red Zone',cls:'rC',short:'Red Zone',zone:'red'};}
 function updateScores(){
   const{tO,tM,pct,ar,tot,ss}=calcAll();
   document.getElementById('spObt').textContent=tO;document.getElementById('spMax').textContent=tM;
@@ -643,21 +682,9 @@ function updateScores(){
   document.getElementById('progLbl').textContent=`${ar} of ${tot} items rated`;const pp=tot>0?Math.round(ar/tot*100):0;document.getElementById('progPct').textContent=pp+'%';document.getElementById('progFill').style.width=pp+'%';
 }
 function doSubmit(){
-  // Validate all clauses are rated
   const unrated=[];
-  SECTIONS.forEach(sec=>{
-    sec.items.forEach((item,idx)=>{
-      const key=sec.id+'_'+idx;
-      const r=state[key]?.rating;
-      if(r===null||r===undefined){
-        unrated.push(sec.name+' → '+item.clause);
-      }
-    });
-  });
-  if(unrated.length>0){
-    alert('⚠️ Please rate all clauses before saving!\n\nUnrated items ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));
-    return;
-  }
+  SECTIONS.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const r=state[key]?.rating;if(r===null||r===undefined)unrated.push(sec.name+' → '+item.clause);});});
+  if(unrated.length>0){alert('⚠️ Please rate all clauses before saving!\n\nUnrated items ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));return;}
   const{tO,tM,pct,ss}=calcAll();
   const store=document.getElementById('storeName').value.trim()||'Unnamed Store';
   const period=document.getElementById('auditPeriod').value||'—';
@@ -674,6 +701,7 @@ function doSubmit(){
   document.getElementById('savedBanner').style.display='none';
   document.getElementById('modalOverlay').classList.add('show');
 }
+
 function saveRecord(){
   if(!pendingResult)return;
   const recs=loadRecords();
@@ -681,37 +709,67 @@ function saveRecord(){
   if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
   saveRecordsLS(recs);
   closeModal();
-  showView('records');
+  showView('scoreTable');
 }
+
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
-function editRecord(id){
-  const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
-  if(rec.sections)SECTIONS=JSON.parse(JSON.stringify(rec.sections));
-  editingId=id;document.getElementById('storeName').value=rec.store||'';document.getElementById('auditPeriod').value=rec.period||'';
-  state=JSON.parse(JSON.stringify(rec.state));
-  populateStoreDropdown();
-  document.getElementById('storeName').value=rec.store||'';
-  renderForm();
-  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}}));
-  document.getElementById('editBanner').style.display='flex';
-  document.getElementById('submitBtn').textContent='Update & Save →';
-  showView('form');window.scrollTo({top:0,behavior:'smooth'});
-}
-function cancelEdit(){
-  loadSections();editingId=null;state=freshState();
-  document.getElementById('editBanner').style.display='none';
-  document.getElementById('submitBtn').textContent='Submit & Save →';
-  document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';
-  renderForm();
-}
-function newAudit(){cancelEdit();showView('form');}
-function deleteRecord(id){
-  if(!confirm('Delete this record?'))return;
-  saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();
 
+// ═══ SCORE TABLE ═══
+function renderScoreTable(){
+  const recs=loadRecords();
+  const fm=document.getElementById('stblMonth')?.value||'';
+  const fz=document.getElementById('stblZone')?.value||'';
+  const fs=(document.getElementById('stblSearch')?.value||'').toLowerCase();
+  let filtered=[...recs];
+  if(fm)filtered=filtered.filter(r=>r.period===fm);
+  if(fz==='green')filtered=filtered.filter(r=>r.pct>=90);
+  else if(fz==='yellow')filtered=filtered.filter(r=>r.pct>=80&&r.pct<90);
+  else if(fz==='red')filtered=filtered.filter(r=>r.pct<80);
+  if(fs)filtered=filtered.filter(r=>(r.store||'').toLowerCase().includes(fs));
+  const total=recs.length;
+  const green=recs.filter(r=>r.pct>=90).length;
+  const yellow=recs.filter(r=>r.pct>=80&&r.pct<90).length;
+  const red=recs.filter(r=>r.pct<80).length;
+  document.getElementById('stblSummary').innerHTML=`
+    <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--navy)">${total}</div><div class="stbl-sum-lbl">Total Audits</div></div>
+    <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--green)">${green}</div><div class="stbl-sum-lbl">🟢 Green Zone</div></div>
+    <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--amber)">${yellow}</div><div class="stbl-sum-lbl">🟡 Yellow Zone</div></div>
+    <div class="stbl-sum-card"><div class="stbl-sum-val" style="color:var(--red)">${red}</div><div class="stbl-sum-lbl">🔴 Red Zone</div></div>`;
+  const tbody=document.getElementById('stblBody');
+  if(!filtered.length){
+    tbody.innerHTML=`<tr><td colspan="7" style="text-align:center;padding:50px;color:var(--muted);font-size:14px">${total===0?'No audits saved yet. Submit an audit to see scores here.':'No records match your filters.'}</td></tr>`;
+    return;
+  }
+  tbody.innerHTML=filtered.map((rec,i)=>{
+    const pc=rec.pct>=90?'var(--green)':rec.pct>=80?'var(--amber)':'var(--red)';
+    const{short,zone}=getRtg(rec.pct);
+    const zc=zone==='green'?'zone-g':zone==='yellow'?'zone-y':'zone-r';
+    return`<tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center;width:44px">${i+1}</td>
+      <td style="font-weight:600;color:var(--navy)">${esc(rec.store||'—')}</td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${esc(rec.period||'—')}</td>
+      <td style="font-family:var(--mono);font-weight:700;color:var(--navy);text-align:center">${rec.tO}</td>
+      <td style="font-family:var(--mono);color:var(--muted);text-align:center">${rec.tM}</td>
+      <td style="font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;color:${pc}">${rec.pct}%</td>
+      <td style="text-align:center"><span class="zone-badge ${zc}">${short}</span></td>
+    </tr>`;
+  }).join('');
 }
 
-// ═══════════════ RECORDS LIST ═══════════════
+function exportScoreCSV(){
+  const recs=loadRecords();
+  if(!recs.length){alert('No records to export.');return;}
+  let csv='#,Store Name,Month,Score Obtained,Max Score,Score %,Zone\n';
+  recs.forEach((r,i)=>{
+    const{short}=getRtg(r.pct);
+    csv+=(i+1)+',"'+(r.store||'').replace(/"/g,'""')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';
+  });
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='ScoreSummary.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+}
+
+// ═══ RECORDS LIST ═══
 function renderRecords(){
   const search=(document.getElementById('searchInput')?.value||'').toLowerCase().trim();
   const fm=document.getElementById('filterMonth')?.value||'';
@@ -742,14 +800,37 @@ function renderRecords(){
   });
 }
 
-// ═══════════════ CHECKLIST EDITOR ═══════════════
+function editRecord(id){
+  const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
+  if(rec.sections)SECTIONS=JSON.parse(JSON.stringify(rec.sections));
+  editingId=id;
+  state=JSON.parse(JSON.stringify(rec.state));
+  populateStoreDropdown();
+  document.getElementById('storeName').value=rec.store||'';
+  document.getElementById('auditPeriod').value=rec.period||'';
+  renderForm();
+  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}}));
+  document.getElementById('editBanner').style.display='flex';
+  document.getElementById('submitBtn').textContent='Update & Save →';
+  showView('form');window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelEdit(){
+  loadSections();editingId=null;state=freshState();
+  document.getElementById('editBanner').style.display='none';
+  document.getElementById('submitBtn').textContent='Submit & Save →';
+  document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';
+  renderForm();
+}
+function newAudit(){cancelEdit();showView('form');}
+function deleteRecord(id){if(!confirm('Delete this record?'))return;saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();}
+
+// ═══ CHECKLIST EDITOR ═══
 function renderEditor(){
   const cont=document.getElementById('editorSecs');cont.innerHTML='';
   SECTIONS.forEach((sec,si)=>{
     const secDiv=document.createElement('div');secDiv.className='esec';secDiv.id='esec_'+si;
     const totalWt=sec.items.reduce((a,x)=>a+(parseInt(x.wt)||0),0);
-    secDiv.innerHTML=`
-      <div class="esec-hdr">
+    secDiv.innerHTML=`<div class="esec-hdr">
         <input class="esec-ico-input" type="text" value="${esc(sec.icon||'📋')}" placeholder="📋" oninput="SECTIONS[${si}].icon=this.value;updCedStats()" maxlength="4"/>
         <input class="esec-name-input" type="text" value="${esc(sec.name)}" placeholder="Section name…" oninput="SECTIONS[${si}].name=this.value;updCedStats()"/>
         <span style="font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-right:4px">${sec.items.length} clauses · ${totalWt} pts</span>
@@ -765,7 +846,7 @@ function renderEditor(){
   updCedStats();
 }
 function clauseRowHTML(si,ci,item){
-  return `<div class="eclause-row" id="erow_${si}_${ci}">
+  return`<div class="eclause-row" id="erow_${si}_${ci}">
     <input type="text" value="${esc(item.clause)}" placeholder="Enter audit clause…" oninput="SECTIONS[${si}].items[${ci}].clause=this.value;updCedStats()"/>
     <select onchange="SECTIONS[${si}].items[${ci}].risk=this.value;updCedStats()">
       <option value="H"${item.risk==='H'?' selected':''}>🔴 High</option>
@@ -797,18 +878,6 @@ function updCedStats(){
   const tS=SECTIONS.length,tC=SECTIONS.reduce((a,s)=>a+s.items.length,0),tW=SECTIONS.reduce((a,s)=>a+s.items.reduce((b,x)=>b+(parseInt(x.wt)||0),0),0);
   const el=document.getElementById('cedStats');if(el)el.innerHTML=`<strong>${tS}</strong> sections · <strong>${tC}</strong> clauses · <strong>${tW}</strong> total weighted marks`;
 }
-
-function resetChecklist(){
-  if(!confirm('Reset checklist to default? This will clear all your custom edits.'))return;
-  localStorage.removeItem('ahm_checklist');
-  loadSections();
-  state=freshState();
-  renderForm();
-  renderEditor();
-  renderStoreTags();
-  alert('✅ Checklist reset to default!');
-}
-
 function saveChecklist(){
   let empty=false;SECTIONS.forEach(sec=>sec.items.forEach(item=>{if(!item.clause.trim())empty=true;}));
   if(empty){alert('Please fill in all clause text before saving.');return;}
@@ -821,11 +890,11 @@ function resetChecklist(){
   localStorage.removeItem('ahm_checklist');loadSections();renderEditor();state=freshState();
 }
 
-// ═══════════════ EXPORT ═══════════════
-function getSelMonth(){const m=document.getElementById('exportMonth').value;if(!m){alert('Please select a month.');return null;}return m;}
-function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records found for '+m+'.');return null;}return r;}
+// ═══ EXPORT ═══
 function showLoad(t,s){document.getElementById('loadingTxt').textContent=t;document.getElementById('loadingSub').textContent=s||'Please wait…';document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoad(){document.getElementById('loadingOverlay').classList.remove('show');}
+function getSelMonth(){const m=document.getElementById('exportMonth').value;if(!m){alert('Please select a month.');return null;}return m;}
+function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records found for '+m+'.');return null;}return r;}
 
 function buildStoreHTMLBlob(rec,month){
   const{short}=getRtg(rec.pct);
@@ -833,71 +902,28 @@ function buildStoreHTMLBlob(rec,month){
   const riskLabel={H:'High Risk',M:'Medium Risk',L:'Low Risk'};
   const recSections=rec.sections||SECTIONS;
   let bdRows='';
-  rec.ss.forEach(s=>{
-    const sp=s.max>0?Math.round(s.obt/s.max*100):0;
-    const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';
-    bdRows+=`<tr><td>${esc(s.name)}</td><td style="text-align:center">${s.obt} / ${s.max}</td><td style="text-align:center;color:${bc};font-weight:700">${sp}%</td></tr>`;
-  });
+  rec.ss.forEach(s=>{const sp=s.max>0?Math.round(s.obt/s.max*100):0;const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';bdRows+=`<tr><td>${esc(s.name)}</td><td style="text-align:center">${s.obt} / ${s.max}</td><td style="text-align:center;color:${bc};font-weight:700">${sp}%</td></tr>`;});
   let detRows='';
   recSections.forEach(sec=>{
     let sO=0,sM=0;
     sec.items.forEach((item,idx)=>{const r=rec.state[sec.id+'_'+idx]?.rating;if(r!=='na'&&r!==null&&r!==undefined){sM+=item.wt;if(r===1)sO+=item.wt;else if(r===0.5)sO+=item.wt*0.5;}});
     detRows+=`<tr style="background:#f0f4f8"><td colspan="5" style="font-weight:700;font-size:12px;color:#1e3a5f;padding:7px 10px">${sec.icon||''} ${esc(sec.name)} <span style="font-weight:400;color:#64748b">(${sO}/${sM} pts)</span></td></tr>`;
     sec.items.forEach((item,idx)=>{
-      const r=rec.state[sec.id+'_'+idx]?.rating;
-      const obs=rec.state[sec.id+'_'+idx]?.obs||'';
+      const r=rec.state[sec.id+'_'+idx]?.rating;const obs=rec.state[sec.id+'_'+idx]?.obs||'';
       const rd=r===null?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
       const rc=r===1?'#059669':r===0?'#dc2626':'#94a3b8';
       detRows+=`<tr><td style="text-align:center;color:#94a3b8;width:28px">${idx+1}</td><td style="font-size:11px;line-height:1.5">${esc(item.clause)}</td><td style="text-align:center;font-size:11px">${riskLabel[item.risk]||item.risk}</td><td style="text-align:center;font-weight:700;color:${rc}">${rd}</td><td style="font-size:11px;color:#64748b">${esc(obs)}</td></tr>`;
     });
   });
   const dateStr=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
-  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
-<style>
-@media print{.no-print{display:none!important}@page{margin:15mm}}
-body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;margin:0;padding:0;background:#f8fafc;font-size:12px}
-.page{max-width:900px;margin:0 auto;padding:20px;background:#fff}
-.hdr-bar{background:linear-gradient(135deg,#0f1f3d,#1a3260);color:#fff;padding:16px 22px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
-.hdr-bar h1{font-size:17px;margin:0;font-weight:700}
-.hdr-bar p{font-size:10px;opacity:.6;margin:3px 0 0}
-.hdr-actions{display:flex;align-items:center;gap:10px}
-.gen-date{font-size:10px;opacity:.65}
-.print-btn{padding:7px 16px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}
-.score-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:16px 22px;margin-bottom:16px;gap:16px;flex-wrap:wrap}
-.store-name{font-size:20px;font-weight:800;color:#0f1f3d}
-.period-lbl{font-size:12px;color:#64748b;margin-top:3px}
-.score-badge{text-align:center;background:#fff;border-radius:10px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}
-.score-pct{font-size:36px;font-weight:800;color:${sc}}
-.score-zone{font-size:12px;font-weight:700;color:${sc};margin-top:2px}
-.score-pts{font-size:10px;color:#64748b;margin-top:2px}
-.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:700;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
-.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}
-table{width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
-th{background:#f0f4f8;padding:8px 11px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;text-align:left;font-weight:600}
-td{padding:8px 11px;border-bottom:1px solid #f0f2f5;vertical-align:top}
-tr:last-child td{border-bottom:none}
-.rating-1{color:#059669;font-weight:700}.rating-0{color:#dc2626;font-weight:700}.rating-na{color:#94a3b8}
-.footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
-</style></head><body>
+  return`<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
+<style>@media print{.no-print{display:none!important}@page{margin:15mm}}body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;margin:0;padding:0;background:#f8fafc;font-size:12px}.page{max-width:900px;margin:0 auto;padding:20px;background:#fff}.hdr-bar{background:linear-gradient(135deg,#0f1f3d,#1a3260);color:#fff;padding:16px 22px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}.hdr-bar h1{font-size:17px;margin:0;font-weight:700}.hdr-bar p{font-size:10px;opacity:.6;margin:3px 0 0}.print-btn{padding:7px 16px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}.score-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:16px 22px;margin-bottom:16px;gap:16px;flex-wrap:wrap}.store-name{font-size:20px;font-weight:800;color:#0f1f3d}.period-lbl{font-size:12px;color:#64748b;margin-top:3px}.score-badge{text-align:center;background:#fff;border-radius:10px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}.score-pct{font-size:36px;font-weight:800;color:${sc}}.score-zone{font-size:12px;font-weight:700;color:${sc};margin-top:2px}.score-pts{font-size:10px;color:#64748b;margin-top:2px}.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:700;margin:16px 0 8px;display:flex;align-items:center;gap:8px}.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e2e8f0}th{background:#f0f4f8;padding:8px 11px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;text-align:left;font-weight:600}td{padding:8px 11px;border-bottom:1px solid #f0f2f5;vertical-align:top}tr:last-child td{border-bottom:none}.footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}</style></head><body>
 <div class="page">
-<div class="hdr-bar">
-  <div><h1>🏪 Operation Scorecard</h1><p>Store Operations Audit Report</p></div>
-  <div class="hdr-actions"><span class="gen-date no-print">Generated: ${dateStr}</span><button class="print-btn no-print" onclick="window.print()">🖨 Print / Save PDF</button></div>
-</div>
-<div class="score-card">
-  <div>
-    <div class="store-name">${esc(rec.store||'Unnamed Store')}</div>
-    <div class="period-lbl">📅 Audit Period: ${rec.period||'—'}</div>
-    <div class="period-lbl">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
-  </div>
-  <div class="score-badge">
-    <div class="score-pct">${rec.pct}%</div>
-    <div class="score-zone">${short}</div>
-    <div class="score-pts">${rec.tO} / ${rec.tM} weighted pts</div>
-  </div>
-</div>
+<div class="hdr-bar"><div><h1>🏪 Operation Scorecard</h1><p>Store Operations Audit Report</p></div><div><button class="print-btn no-print" onclick="window.print()">🖨 Print / Save PDF</button></div></div>
+<div class="score-card"><div><div class="store-name">${esc(rec.store||'Unnamed Store')}</div><div class="period-lbl">📅 Audit Period: ${rec.period||'—'}</div><div class="period-lbl">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div></div>
+<div class="score-badge"><div class="score-pct">${rec.pct}%</div><div class="score-zone">${short}</div><div class="score-pts">${rec.tO} / ${rec.tM} pts</div></div></div>
 <div class="sec-title">Section-wise Breakdown</div>
-<table><thead><tr><th>Section</th><th style="text-align:center">Score</th><th style="text-align:center">Max</th><th style="text-align:center">%</th></tr></thead><tbody>${bdRows}</tbody></table>
+<table><thead><tr><th>Section</th><th style="text-align:center">Score</th><th style="text-align:center">%</th></tr></thead><tbody>${bdRows}</tbody></table>
 <div class="sec-title">Detailed Audit Responses</div>
 <table><thead><tr><th style="width:28px">#</th><th>Audit Clause</th><th style="text-align:center">Risk</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead><tbody>${detRows}</tbody></table>
 <div class="footer"><span>Operation Scorecard System</span><span>© ${new Date().getFullYear()} AHM Operations</span></div>
@@ -909,18 +935,8 @@ function exportAllPDF(){
   const recs=getMonthRecs(month);if(!recs)return;
   showLoad('Preparing '+recs.length+' report(s)…','Downloading for '+month);
   setTimeout(()=>{
-    try{
-      recs.forEach(rec=>{
-        const html=buildStoreHTMLBlob(rec,month);
-        const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-        const url=URL.createObjectURL(blob);
-        const a=document.createElement('a');
-        a.href=url;a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
-        document.body.appendChild(a);a.click();
-        setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
-      });
-      hideLoad();
-    }catch(e){hideLoad();alert('Error: '+e.message);}
+    try{recs.forEach(rec=>{const html=buildStoreHTMLBlob(rec,month);const blob=new Blob([html],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);});hideLoad();}
+    catch(e){hideLoad();alert('Error: '+e.message);}
   },200);
 }
 
@@ -929,65 +945,30 @@ function exportAllExcel(){
   if(!month){alert('Please select a month first.');return;}
   const recs=loadRecords().filter(r=>r.period===month);
   if(!recs.length){alert('No records found for '+month+'.');return;}
-  try{
-    // Summary sheet
-    let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
-    recs.forEach(r=>{
-      const{short}=getRtg(r.pct);
-      csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';
-    });
-    // Detailed responses
-    csv+='\n\nDetailed Responses\n';
-    csv+='Store,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
-    recs.forEach(rec=>{
-      const secs=rec.sections||SECTIONS;
-      secs.forEach(sec=>{
-        const items=sec.items||sec.clauses||[];
-        items.forEach((item,idx)=>{
-          const key=sec.id+'_'+idx;
-          const st=rec.state&&rec.state[key];
-          const r=st?st.rating:null;
-          const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);
-          const obs=st?st.obs||'':'';
-          csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||item.name||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||item.risk||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';
-        });
-      });
-    });
-    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url;a.download='OpScorecard_'+month+'.csv';
-    document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
-  }catch(e){alert('Export error: '+e.message);}
+  let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
+  recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
+  csv+='\n\nDetailed Responses\nStore,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
+  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{const items=sec.items||[];items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
+  const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='OpScorecard_'+month+'.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
-
-// ═══════════════ LOCAL STORAGE ONLY ═══════════════
-
 
 function downloadSingleReport(id){
-  const rec=loadRecords().find(r=>r.id===id);
-  if(!rec){alert('Record not found.');return;}
-  const month=rec.period||'Report';
-  const html=buildStoreHTMLBlob(rec,month);
+  const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
+  const html=buildStoreHTMLBlob(rec,rec.period||'Report');
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='OpScorecard_'+(rec.period||'Report')+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 
-// ═══════════════ HELPERS ═══════════════
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ═══════════════ INIT ═══════════════
 loadSections();
 state=freshState();
 populateStoreDropdown();
 renderForm();
-
 </script>
 </body>
 </html>
