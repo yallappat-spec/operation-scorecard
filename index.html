@@ -474,7 +474,7 @@ const DEFAULT_SECTIONS=[
   {id:'dmg',name:'Damages',icon:'⚠️',items:[
     {clause:'Whether store damages are kept separately from the floor inventory or not (Exclude Stone fallen).',risk:'H',wt:5},
     {clause:'Whether all the damages are moved to the damage location or not.',risk:'H',wt:5},
-    {clause:'Whether the Indian damages outward process is happening on a 15 days once (15th & 30th or 31st).',risk:'H',wt:5},
+    {clause:'Whether the Indian damages outward process is happening on a 15 days once (15th and 30th or 31st).',risk:'H',wt:5},
     {clause:'Whether the nature of damage details is mentioned on the damaged items or not.',risk:'M',wt:2},
   ]},
   {id:'manual',name:'Manual Bills',icon:'🧾',items:[
@@ -497,7 +497,7 @@ const DEFAULT_SECTIONS=[
   {id:'cust',name:'Customer Handling',icon:'🤝',items:[
     {clause:'Whether Store followed billing process as per the given guidelines.',risk:'H',wt:5},
     {clause:'Whether the store reached a customer enrollment percentage above 90%?',risk:'M',wt:5},
-    {clause:'Whether Stores have scored Customer Excellence above 90%>10, 80%-89%>5, Below 80%>0.',risk:'H',wt:10},
+    {clause:'Whether Stores have scored Customer Excellence above 90% score 10, 80%-89% score 5, Below 80% score 0.',risk:'H',wt:10},
   ]},
   {id:'stexp',name:'Store Experience',icon:'✨',items:[
     {clause:'Whether Fragrance pot is being used by the store or not.',risk:'L',wt:2},
@@ -547,9 +547,7 @@ function bulkUploadStores(input){
   const reader=new FileReader();
   reader.onload=function(e){
     let names=[];
-    e.target.result.split(/
-?
-/).forEach(line=>{line.split(',').forEach(n=>{const t=n.trim().replace(/^"|"$/g,'').trim();if(t)names.push(t);});});
+    e.target.result.split(/\r?\n/).forEach(line=>{line.split(',').forEach(n=>{const t=n.trim().replace(/^"|"$/g,'').trim();if(t)names.push(t);});});
     if(!names.length){alert('No store names found.');return;}
     const merged=[...new Set([...loadStores(),...names])];
     saveStores(merged);renderStoreTags();populateStoreDropdown();
