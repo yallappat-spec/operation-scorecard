@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Operation Scorecard</title>
+
+
+<style>
+:root{--navy:#0f1f3d;--navy2:#1a3260;--blue:#1d4ed8;--blue2:#3b82f6;--green:#059669;--red:#dc2626;--amber:#d97706;--bg:#eef2f8;--card:#fff;--border:#dde3ed;--text:#1e2a3a;--muted:#64748b;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;--mono:'Courier New',Courier,monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text)}
+.hdr{background:linear-gradient(130deg,var(--navy),var(--navy2));color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,.3)}
+.hdr-in{max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.hdr-brand{display:flex;align-items:center;gap:11px}
+.hdr-logo{width:36px;height:36px;background:#f59e0b;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--navy);flex-shrink:0}
+.hdr-title{font-size:15px;font-weight:600}
+.hdr-sub{font-size:11px;opacity:.55;font-family:var(--mono);margin-top:1px}
+.hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hdr-note{font-size:11px;font-family:var(--mono);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:4px 12px;border-radius:20px;color:rgba(255,255,255,.65)}
+.btn-hdr{font-size:12px;font-weight:600;padding:5px 14px;border-radius:20px;cursor:pointer;font-family:var(--sans);border:1px solid transparent;transition:background .15s}
+.btn-hdr-gold{background:rgba(245,158,11,.2);border-color:rgba(245,158,11,.4);color:#fde68a}
+.btn-hdr-gold:hover{background:rgba(245,158,11,.35)}
+.btn-hdr-teal{background:rgba(20,184,166,.2);border-color:rgba(20,184,166,.4);color:#99f6e4}
+.btn-hdr-teal:hover{background:rgba(20,184,166,.35)}
+.btn-hdr-indigo{background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#c7d2fe}
+.btn-hdr-indigo:hover{background:rgba(99,102,241,.4)}
+
+.view{display:none}.view.active{display:block}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 16px 90px}
+.instr{background:linear-gradient(90deg,#eff6ff,#f0fdf4);border:1px solid #bfdbfe;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;gap:12px}
+.instr-text{font-size:13px;color:#1e40af;line-height:1.55}
+.info-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:20px;box-shadow:0 1px 6px rgba(0,0,0,.05)}
+.card-hdr{font-size:10.5px;font-family:var(--mono);color:var(--blue);letter-spacing:1.2px;text-transform:uppercase;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card-hdr::after{content:'';flex:1;height:1px;background:var(--border)}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.field input,.field select{width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13.5px;color:var(--text);background:#fafbfc;outline:none;transition:border-color .15s}
+.field input:focus,.field select:focus{border-color:var(--blue2);background:#fff}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.legend-lbl{font-size:11px;color:var(--muted);font-weight:600}
+.risk{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:600}
+.rH{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.rM{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+.rL{background:#f0fdf4;color:#059669;border:1px solid #bbf7d0}
+.prog-wrap{margin-bottom:16px}
+.prog-top{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:5px}
+.prog-bg{background:var(--border);border-radius:10px;height:5px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue2),var(--navy2));border-radius:10px;transition:width .3s}
+.sec{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;background:linear-gradient(90deg,#f8fafd,#f1f5fa);border-bottom:1px solid var(--border)}
+.sec-hdr:hover{background:linear-gradient(90deg,#eef4ff,#e8f0fb)}
+.sec-left{display:flex;align-items:center;gap:11px}
+.sec-ico{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.sec-name{font-size:13.5px;font-weight:600;color:var(--navy)}
+.sec-meta{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:1px}
+.sec-pill{border-radius:20px;padding:4px 11px;font-size:11.5px;font-family:var(--mono);font-weight:500;min-width:72px;text-align:center;background:#eef2ff;color:var(--blue)}
+.pill-g{background:#d1fae5;color:var(--green)}.pill-w{background:#fef3c7;color:var(--amber)}.pill-b{background:#fee2e2;color:var(--red)}
+.chev{font-size:11px;color:var(--muted);transition:transform .2s}
+.sec.closed .chev{transform:rotate(-90deg)}
+.sec.closed .sec-body{display:none}
+.sec-body{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:720px}
+thead tr{background:#f7f9fc;border-bottom:1.5px solid var(--border)}
+th{padding:9px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid #f0f2f5}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:#fafbff}
+td{padding:11px 12px;font-size:13px;vertical-align:middle}
+.td-sno{font-family:var(--mono);font-size:11px;color:var(--muted);width:32px;text-align:center}
+.td-clause{line-height:1.5;max-width:380px}
+.td-center{text-align:center}
+.td-num{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);width:60px}
+.td-rating{width:130px;text-align:center}
+.td-obs{min-width:160px}
+.tog{display:inline-flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;background:#f8fafc}
+.tog button{padding:6px 13px;font-size:12.5px;font-weight:600;font-family:var(--mono);border:none;background:transparent;cursor:pointer;color:var(--muted);border-right:1px solid var(--border);outline:none}
+.tog button:last-child{border-right:none}
+.tog button:hover{background:#eff4ff;color:var(--blue)}
+.a1{background:var(--green)!important;color:#fff!important}
+.a0{background:var(--red)!important;color:#fff!important}
+.ana{background:#94a3b8!important;color:#fff!important}
+.ah{background:#f59e0b!important;color:#fff!important}
+.obs{width:100%;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:12px;color:var(--text);background:#fafbfc;resize:none;min-height:32px;outline:none}
+.obs:focus{border-color:var(--blue2);background:#fff}
+.sp{position:sticky;bottom:16px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px 22px;box-shadow:0 8px 28px rgba(15,31,61,.14);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;z-index:50;margin-top:20px}
+.sp-stats{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.sp-item{text-align:center}
+.sp-lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.sp-val{font-size:20px;font-weight:700;font-family:var(--mono);color:var(--navy)}
+.sp-big{font-size:26px}
+.sp-div{width:1px;height:36px;background:var(--border)}
+.rtag{padding:7px 16px;border-radius:9px;font-size:13px;font-weight:700}
+.rA{background:#d1fae5;color:#065f46}.rB{background:#fef9c3;color:#713f12}.rC{background:#fee2e2;color:#7f1d1d}
+.sub-btn{padding:11px 28px;background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+.sub-btn:hover{opacity:.9}
+.edit-banner{background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:11px 16px;font-size:13px;color:#78350f;font-weight:500;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.btn-cancel-edit{padding:6px 14px;background:#fff;color:#78350f;border:1px solid #fde68a;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer}
+.rec-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+.rec-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.rec-title{font-size:20px;font-weight:700;color:var(--navy)}
+.btn-new{padding:9px 18px;background:linear-gradient(135deg,var(--blue),var(--navy2));color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.export-panel{background:linear-gradient(90deg,#f0f9ff,#f5f3ff);border:1.5px solid #bfdbfe;border-radius:14px;padding:16px 20px;margin-bottom:18px}
+.ep-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.ep-label{font-size:13px;font-weight:700;color:var(--navy2);white-space:nowrap}
+.ep-select{padding:8px 12px;border:1.5px solid #bfdbfe;border-radius:8px;font-family:var(--sans);font-size:13px;background:#fff;outline:none;min-width:160px}
+.btn-exp{padding:9px 20px;color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-exp:hover{opacity:.88}
+.btn-exp-pdf{background:#dc2626}.btn-exp-xl{background:#059669}
+.ep-hint{font-size:11.5px;color:var(--muted);margin-top:9px}
+.filter-bar{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.search-wrap{position:relative;flex:1;min-width:180px}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;pointer-events:none}
+.search-wrap input{width:100%;padding:8px 11px 8px 32px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;outline:none;background:#fafbfc}
+.search-wrap input:focus{border-color:var(--blue2);background:#fff}
+.filter-lbl{font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap}
+.filter-bar select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;background:#fafbfc;outline:none;min-width:150px}
+.empty-state{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-state .ei{font-size:48px;margin-bottom:12px}
+.month-label{font-size:11px;font-family:var(--mono);color:var(--blue);letter-spacing:1.2px;text-transform:uppercase;font-weight:600;margin:20px 0 10px;display:flex;align-items:center;gap:8px}
+.month-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.record-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:10px}
+.rc-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rc-store{font-size:15px;font-weight:700;color:var(--navy)}
+.rc-meta{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.rc-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.rc-pct{font-size:24px;font-weight:800;font-family:var(--mono)}
+.rc-tag{padding:4px 12px;border-radius:8px;font-size:11.5px;font-weight:700}
+.rc-btns{display:flex;gap:7px;margin-top:11px;padding-top:11px;border-top:1px solid #f0f2f5;flex-wrap:wrap}
+.btn-sm{padding:6px 14px;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-edit-sm{background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe}
+.btn-del-sm{background:#f8fafc;color:var(--muted);border:1px solid var(--border);margin-left:auto}
+/* CHECKLIST EDITOR */
+.ced-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 80px}
+.ced-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;gap:12px;flex-wrap:wrap}
+.ced-title{font-size:20px;font-weight:700;color:var(--navy)}
+.ced-hint{font-size:12.5px;color:var(--muted);margin-bottom:20px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:9px 14px}
+.ced-actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn-add-sec{padding:9px 18px;background:linear-gradient(135deg,#059669,#065f46);color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.btn-reset-cl{padding:9px 18px;background:#f8fafc;color:var(--muted);border:1px solid var(--border);border-radius:9px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.esec{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.esec-hdr{display:flex;align-items:center;gap:10px;padding:13px 16px;background:linear-gradient(90deg,#f8fafd,#f1f5fa);border-bottom:1px solid var(--border)}
+.esec-ico-input{width:52px;padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:14px;text-align:center;background:#fafbfc;outline:none}
+.esec-name-input{flex:1;padding:6px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:13.5px;font-weight:600;color:var(--navy);background:#fafbfc;outline:none}
+.esec-name-input:focus,.esec-ico-input:focus{border-color:var(--blue2);background:#fff}
+.btn-del-sec{padding:5px 12px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:7px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+.btn-del-sec:hover{background:#fee2e2}
+.eclauses{padding:10px 14px 4px}
+.eclause-row{display:grid;grid-template-columns:1fr 90px 70px 36px;gap:8px;align-items:center;margin-bottom:8px;background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:9px 11px}
+.eclause-row input[type=text]{width:100%;padding:6px 9px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:12.5px;color:var(--text);background:#fff;outline:none}
+.eclause-row input[type=text]:focus{border-color:var(--blue2)}
+.eclause-row select{padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:12.5px;background:#fff;outline:none;width:100%}
+.eclause-row input[type=number]{width:100%;padding:6px 8px;border:1.5px solid var(--border);border-radius:7px;font-family:var(--sans);font-size:12.5px;text-align:center;background:#fff;outline:none}
+.btn-del-clause{width:32px;height:32px;background:#fef2f2;color:var(--red);border:1px solid #fecaca;border-radius:7px;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-del-clause:hover{background:#fee2e2}
+.eclause-labels{display:grid;grid-template-columns:1fr 90px 70px 36px;gap:8px;padding:0 11px 5px;font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.btn-add-clause{margin:4px 0 12px;padding:7px 14px;background:#eff6ff;color:var(--blue);border:1px solid #bfdbfe;border-radius:8px;font-family:var(--sans);font-size:12px;font-weight:600;cursor:pointer}
+.btn-add-clause:hover{background:#dbeafe}
+.ced-save-bar{position:sticky;bottom:16px;background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:14px 22px;box-shadow:0 8px 28px rgba(15,31,61,.14);display:flex;align-items:center;justify-content:space-between;gap:16px;z-index:50;margin-top:20px;flex-wrap:wrap}
+.ced-stats{font-size:13px;color:var(--muted)}
+.ced-stats strong{color:var(--navy)}
+.btn-save-checklist{padding:11px 28px;background:linear-gradient(135deg,#059669,#065f46);color:#fff;border:none;border-radius:9px;font-family:var(--sans);font-size:14px;font-weight:600;cursor:pointer}
+.saved-flash{background:#d1fae5;color:#065f46;padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;display:none}
+/* STORE LIST */
+.slist-wrap{margin-top:24px;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.slist-hdr{background:linear-gradient(90deg,#f0f9ff,#eff6ff);padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.slist-title{font-size:13.5px;font-weight:700;color:var(--navy)}
+.slist-body{padding:16px 18px}
+.store-tags{display:flex;flex-wrap:wrap;gap:8px;min-height:36px;margin-bottom:14px}
+.store-tag{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;color:var(--navy);padding:5px 12px;border-radius:20px;font-size:12.5px;font-weight:500}
+.store-tag button{background:none;border:none;cursor:pointer;color:#94a3b8;font-size:13px;line-height:1;padding:0 0 0 2px}
+.store-tag button:hover{color:var(--red)}
+.store-add-row{display:flex;gap:8px;align-items:center}
+.store-add-row input{flex:1;padding:8px 11px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;outline:none;background:#fafbfc}
+.store-add-row input:focus{border-color:var(--blue2);background:#fff}
+.btn-add-store{padding:8px 18px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.store-empty{font-size:13px;color:var(--muted);font-style:italic}
+/* LOADING */
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,.65);z-index:500;align-items:center;justify-content:center}
+.loading-overlay.show{display:flex}
+.loading-box{background:#fff;border-radius:16px;padding:32px 48px;text-align:center}
+.spinner{width:44px;height:44px;border:4px solid #e2e8f0;border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:15px;font-weight:700;color:var(--navy)}
+.loading-sub{font-size:12px;color:var(--muted);margin-top:5px}
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(15,31,61,.6);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:16px}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:20px;padding:32px 36px;max-width:720px;width:100%;max-height:92vh;overflow-y:auto}
+.m-hdr{text-align:center;margin-bottom:20px}
+.m-ico{font-size:42px;margin-bottom:8px}
+.m-title{font-size:22px;font-weight:700;color:var(--navy)}
+.m-sub{font-size:13px;color:var(--muted);margin-top:4px}
+.big-score{display:flex;align-items:baseline;justify-content:center;gap:4px;margin:14px 0}
+.bs-num{font-size:68px;font-weight:800;font-family:var(--mono);line-height:1}
+.bs-pct{font-size:26px;font-family:var(--mono);color:var(--muted)}
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.meta-item{background:#f8fafc;border-radius:10px;padding:12px;text-align:center}
+.ml{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:600}
+.mv{font-size:19px;font-weight:700;font-family:var(--mono);margin-top:3px}
+.bd-title{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:600;margin:18px 0 10px}
+.bd-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bd-name{font-size:12.5px;font-weight:500;width:200px;flex-shrink:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bd-bar-bg{flex:1;background:#f0f4f8;border-radius:5px;height:9px;overflow:hidden}
+.bd-bar{height:100%;border-radius:5px}
+.bd-val{font-size:11.5px;font-family:var(--mono);color:var(--muted);width:86px;text-align:right;flex-shrink:0}
+.m-actions{display:flex;gap:10px;justify-content:center;margin-top:22px;flex-wrap:wrap}
+.btn-save{padding:10px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.btn-close{padding:10px 22px;background:#f0f4f8;color:var(--navy);border:1px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
+.saved-banner{background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:10px 16px;font-size:13px;color:#065f46;font-weight:600;text-align:center;margin-bottom:14px;display:none}
+
+@media(max-width:600px){.sp{flex-direction:column}.sub-btn{width:100%;text-align:center}.meta-grid{grid-template-columns:1fr 1fr}.modal,.gas-modal{padding:22px 16px}.bs-num{font-size:48px}.eclause-row{grid-template-columns:1fr;gap:6px}}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box"><div class="spinner"></div><div class="loading-txt" id="loadingTxt">Generating…</div><div class="loading-sub" id="loadingSub">Please wait</div></div>
+</div>
+
+<!-- HEADER -->
+<div class="hdr"><div class="hdr-in">
+  <div class="hdr-brand">
+    <div class="hdr-logo">OS</div>
+    <div><div class="hdr-title">Operation Scorecard</div><div class="hdr-sub">Store Audit Rating Sheet</div></div>
+  </div>
+  <div class="hdr-right">
+    <div class="hdr-note">1 = Adhered · 0 = Deviation · NA = Not Applicable</div>
+    <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
+    <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
+  </div>
+</div></div>
+
+<!-- FORM VIEW -->
+<div id="viewForm" class="view active">
+<div class="wrap">
+  <div class="edit-banner" id="editBanner" style="display:none">
+    ✏️ <span><strong>Edit Mode</strong> — Editing saved audit. Save to update the record.</span>
+    <button class="btn-cancel-edit" onclick="cancelEdit()">✕ Cancel</button>
+  </div>
+  <div class="instr">
+    <div style="font-size:18px;margin-top:1px">📋</div>
+    <div class="instr-text"><strong>Instructions:</strong> Put <strong>1</strong> if control is adhered, <strong>0</strong> if any deviation found, <strong>NA</strong> if not applicable.</div>
+  </div>
+  <div class="info-card">
+    <div class="card-hdr">Store Information</div>
+    <div class="info-grid">
+      <div class="field"><label>Store Name</label>
+        <select id="storeName"><option value="">— Select Store —</option></select>
+        <div style="margin-top:5px;font-size:11px;color:var(--muted)">Don't see your store? <a href="#" onclick="showView('editor');return false;" style="color:var(--blue);font-weight:600">Manage store list →</a></div>
+      </div>
+      <div class="field"><label>Audit Period</label>
+        <select id="auditPeriod"><option value="">Select Month</option>
+          <option>January</option><option>February</option><option>March</option><option>April</option>
+          <option>May</option><option>June</option><option>July</option><option>August</option>
+          <option>September</option><option>October</option><option>November</option><option>December</option>
+        </select>
+      </div>
+    </div>
+  </div>
+  <div class="legend">
+    <span class="legend-lbl">Risk Level:</span>
+    <span class="risk rH">🔴 High Risk</span>
+    <span class="risk rM">🟡 Medium Risk</span>
+    <span class="risk rL">🟢 Low Risk</span>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-top"><span id="progLbl">0 of 0 items rated</span><span id="progPct">0%</span></div>
+    <div class="prog-bg"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+  </div>
+  <div id="secCont"></div>
+  <div class="sp">
+    <div class="sp-stats">
+      <div class="sp-item"><div class="sp-lbl">Score Obtained</div><div class="sp-val" id="spObt">0</div></div>
+      <div class="sp-div"></div>
+      <div class="sp-item"><div class="sp-lbl">Max Score</div><div class="sp-val" id="spMax">0</div></div>
+      <div class="sp-div"></div>
+      <div class="sp-item"><div class="sp-lbl">Audit Score %</div><div class="sp-val sp-big" id="spPct" style="color:var(--blue)">—</div></div>
+      <div class="sp-div"></div>
+      <div class="sp-item"><div class="sp-lbl">Zone</div><div id="spRating" class="rtag rB">—</div></div>
+    </div>
+    <button class="sub-btn" id="submitBtn" onclick="doSubmit()">Submit &amp; Save →</button>
+  </div>
+</div>
+</div>
+
+<!-- RECORDS VIEW -->
+<div id="viewRecords" class="view">
+<div class="rec-wrap">
+  <div class="rec-top">
+    <div class="rec-title">📁 Saved Audit Records</div>
+    <button class="btn-new" onclick="newAudit()">+ New Audit</button>
+  </div>
+  <div class="export-panel">
+    <div class="ep-row">
+      <span class="ep-label">📤 Export Month Report:</span>
+      <select class="ep-select" id="exportMonth">
+        <option value="">Select Month</option>
+        <option>January</option><option>February</option><option>March</option><option>April</option>
+        <option>May</option><option>June</option><option>July</option><option>August</option>
+        <option>September</option><option>October</option><option>November</option><option>December</option>
+      </select>
+      <button class="btn-exp btn-exp-pdf" onclick="exportAllPDF()">📄 Download Reports</button>
+      <button class="btn-exp btn-exp-xl" onclick="exportAllExcel()">📊 Download CSV (Excel)</button>
+    </div>
+    <div class="ep-hint">Select a month → Download Reports saves one HTML report per store · Download CSV saves all stores in one file (opens in Excel).</div>
+  </div>
+  <div class="filter-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input id="searchInput" placeholder="Search store name…" oninput="renderRecords()"/>
+    </div>
+    <span class="filter-lbl">Filter by Month:</span>
+    <select id="filterMonth" onchange="renderRecords()">
+      <option value="">All Months</option>
+      <option>January</option><option>February</option><option>March</option><option>April</option>
+      <option>May</option><option>June</option><option>July</option><option>August</option>
+      <option>September</option><option>October</option><option>November</option><option>December</option>
+    </select>
+    <span class="filter-lbl">Filter by Zone:</span>
+    <select id="filterZone" onchange="renderRecords()">
+      <option value="">All Zones</option>
+      <option value="green">🟢 Green Zone (≥90%)</option>
+      <option value="yellow">🟡 Yellow Zone (80-89%)</option>
+      <option value="red">🔴 Red Zone (&lt;80%)</option>
+    </select>
+  </div>
+  <div id="recordsList"></div>
+</div>
+</div>
+
+<!-- EDITOR VIEW -->
+<div id="viewEditor" class="view">
+<div class="ced-wrap">
+  <div class="ced-top">
+    <div class="ced-title">⚙️ Edit Checklist</div>
+    <div class="ced-actions">
+      <button class="btn-add-sec" onclick="addSection()">＋ Add Section</button>
+      <button class="btn-reset-cl" onclick="resetChecklist()">↺ Reset to Default</button>
+      <button class="btn-hdr btn-hdr-gold" style="padding:9px 18px;font-size:13px" onclick="showView('form')">← Back to Audit</button>
+    </div>
+  </div>
+  <div class="ced-hint">⚠️ Changes here update the audit form immediately. Add or remove sections and clauses, edit names, risk levels and weighted marks anytime.</div>
+  <div id="editorSecs"></div>
+  <div class="slist-wrap">
+    <div class="slist-hdr">
+      <div class="slist-title">🏪 Store List</div>
+      <span style="font-size:11.5px;color:var(--muted)">These stores appear in the audit form dropdown</span>
+    </div>
+    <div class="slist-body">
+      <div class="store-tags" id="storeTags"></div>
+      <div class="store-add-row">
+        <input id="newStoreInput" placeholder="Type store name and press Add or Enter…" onkeydown="if(event.key==='Enter')addStore()"/>
+        <button class="btn-add-store" onclick="addStore()">＋ Add Store</button>
+        <label class="btn-add-store" style="background:#0f766e;cursor:pointer;margin-left:4px" title="Upload CSV file with one store name per line">
+          📂 Bulk Upload CSV
+          <input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadStores(this)"/>
+        </label>
+        <button class="btn-add-store" style="background:#dc2626" onclick="clearAllStores()">🗑 Clear All</button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);margin-top:6px">📋 CSV format: one store name per line (or comma separated). <a href="#" onclick="downloadSampleCSV();return false;" style="color:var(--blue)">Download sample CSV</a></div>
+    </div>
+  </div>
+  <div class="ced-save-bar">
+    <div class="ced-stats" id="cedStats">Loading…</div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div class="saved-flash" id="cedFlash">✅ Checklist saved!</div>
+      <button class="btn-save-checklist" onclick="saveChecklist()">💾 Save Checklist</button>
+      <button class="btn-save-checklist" style="background:#dc2626" onclick="resetChecklist()">🔄 Reset to Default</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- RESULT MODAL -->
+<div class="overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="saved-banner" id="savedBanner"></div>
+    <div class="m-hdr">
+      <div class="m-ico" id="mIco">📋</div>
+      <div class="m-title" id="mTitle">Audit Complete</div>
+      <div class="m-sub" id="mSub"></div>
+    </div>
+    <div class="big-score"><div class="bs-num" id="mBig">0</div><div class="bs-pct">%</div></div>
+    <div class="meta-grid">
+      <div class="meta-item"><div class="ml">Score Obtained</div><div class="mv" id="mObt">0</div></div>
+      <div class="meta-item"><div class="ml">Max Score</div><div class="mv" id="mMax">0</div></div>
+      <div class="meta-item"><div class="ml">Zone</div><div class="mv" id="mEval" style="font-size:13px">—</div></div>
+    </div>
+    <div class="bd-title">Section-wise Breakdown</div>
+    <div id="mBreakdown"></div>
+    <div class="m-actions">
+      <button class="btn-save" onclick="saveRecord()">💾 Save Record</button>
+      <button class="btn-close" onclick="closeModal()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+  </div>
+</div>
+
+<script>
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DEFAULT_SECTIONS=[
+  {id:'inv',name:'Inventory Transactions',icon:'📦',items:[
+    {clause:'Whether the store is checking the inward items as per the given guidelines.',risk:'H',wt:5},
+    {clause:'Whether the store is transferring out mismatched items without verifying them in the RPOs.',risk:'H',wt:7},
+    {clause:'Whether the inward is done within the given timeline.',risk:'M',wt:5},
+    {clause:'Whether the inventory location process is followed at the store level.',risk:'H',wt:5},
+    {clause:'Whether the store displayed products on the floor without inwarding items.',risk:'H',wt:5},
+  ]},
+  {id:'phyinv',name:'Physical Inventory',icon:'🔢',items:[
+    {clause:'Whether the store is conducting weekly global count as per the given guidelines.',risk:'M',wt:5},
+    {clause:'Whether the store is conducting daily Temple silver counting as per the process.',risk:'H',wt:5},
+  ]},
+  {id:'tagless',name:'Tagless',icon:'🏷️',items:[
+    {clause:'Whether the store is sending a weekly tagless request or not.',risk:'M',wt:3},
+    {clause:'Whether the Stock or Surprise audit found less than 10 quantities of tagless items.',risk:'H',wt:5},
+    {clause:'Whether the design number is mentioned for tagless items (Separated Damages).',risk:'M',wt:2},
+  ]},
+  {id:'sales',name:'Sales Returns',icon:'🔄',items:[
+    {clause:'Whether all the sales return details are posted in the sales return group or not.',risk:'M',wt:5},
+    {clause:'Whether sales returns are done in INSTORE exchange mode.',risk:'H',wt:5},
+    {clause:'Whether the issue found in E-commerce exchange (Tender).',risk:'H',wt:5},
+  ]},
+  {id:'groom',name:'Grooming Standards',icon:'👔',items:[
+    {clause:'Whether grooming issues have been found in the store.',risk:'L',wt:3},
+    {clause:'Whether Any Behaviour related issues found in the store.',risk:'H',wt:5},
+  ]},
+  {id:'opncls',name:'Opening and Closing Deviation',icon:'🔑',items:[
+    {clause:'Whether the store is opening and closing as per the given guidelines.',risk:'H',wt:5},
+    {clause:'Whether Stores are taking briefing on a daily basis (1PM to 1.30PM).',risk:'M',wt:2},
+  ]},
+  {id:'cash',name:'Cash Management Controls',icon:'💰',items:[
+    {clause:'Whether any difference has been found between the system cash and physical cash (Is the account balance report tallying with the safe cash).',risk:'H',wt:5},
+    {clause:'Whether the petty cash amount is physically tallying or not (Minimum 100 Rs).',risk:'M',wt:3},
+    {clause:'Whether the float cash amount is tallying with the physical amount.',risk:'H',wt:5},
+  ]},
+  {id:'dmg',name:'Damages',icon:'⚠️',items:[
+    {clause:'Whether store damages are kept separately from the floor inventory or not (Exclude Stone fallen).',risk:'H',wt:5},
+    {clause:'Whether all the damages are moved to the damage location or not.',risk:'H',wt:5},
+    {clause:'Whether the Indian damages outward process is happening on a 15 days once (15th & 30th or 31st).',risk:'H',wt:5},
+    {clause:'Whether the nature of damage details is mentioned on the damaged items or not.',risk:'M',wt:2},
+  ]},
+  {id:'manual',name:'Manual Bills',icon:'🧾',items:[
+    {clause:'Whether the manual bills process is followed by store as per the given guidelines.',risk:'H',wt:5},
+    {clause:'Whether the completed manual book sent to the warehouse or not.',risk:'M',wt:3},
+    {clause:'Whether all the manual bills have been posted in the KRPL group or not.',risk:'H',wt:5},
+  ]},
+  {id:'rep',name:'Repaired Items',icon:'🔧',items:[
+    {clause:'Whether all the repaired items are kept separately from the store inventory.',risk:'H',wt:5},
+    {clause:'Whether there is a weekly follow-up process in place for clearing repair items from the store.',risk:'M',wt:3},
+    {clause:'Whether Temple polish process followed by the store or not.',risk:'M',wt:3},
+    {clause:'Whether any Necklace set earring mismatch or missing found in the current month.',risk:'H',wt:7},
+    {clause:'Whether the Temple polish amount matches with the warehouse drive sheet or not.',risk:'H',wt:5},
+  ]},
+  {id:'disp',name:'Display Items',icon:'🖼️',items:[
+    {clause:'Whether the display is done as per the standard for both the floor and back stock.',risk:'M',wt:5},
+    {clause:'Whether the stores has done silver items polishing at the store level.',risk:'L',wt:2},
+    {clause:'Whether the display cloth is clean and neat (Including Dusting).',risk:'L',wt:3},
+  ]},
+  {id:'cust',name:'Customer Handling',icon:'🤝',items:[
+    {clause:'Whether Store followed billing process as per the given guidelines.',risk:'H',wt:5},
+    {clause:'Whether the store reached a customer enrollment percentage above 90%?',risk:'M',wt:5},
+    {clause:'Whether Stores have scored Customer Excellence above 90%>10, 80%-89%>5, Below 80%>0.',risk:'H',wt:10},
+  ]},
+  {id:'stexp',name:'Store Experience',icon:'✨',items:[
+    {clause:'Whether Fragrance pot is being used by the store or not.',risk:'L',wt:2},
+    {clause:'Whether Pantry Cleaning, Store hygiene related issues found during the audit.',risk:'L',wt:3},
+  ]},
+  {id:'ecom',name:'Ecommerce Process',icon:'🛒',items:[
+    {clause:'Whether Ecommerce rejection % is below 5%.',risk:'H',wt:5},
+    {clause:'Whether Packing issues have been highlighted for current month.',risk:'M',wt:3},
+    {clause:'Whether Ecommerce orders have been accepted before 4 hours (average).',risk:'M',wt:3},
+  ]},
+];
+
+let SECTIONS=[];
+function loadSections(){
+  try{
+    const ver=localStorage.getItem('ahm_checklist_ver');
+    if(ver!=='v2'){
+      // Force reset to new default on version mismatch
+      localStorage.removeItem('ahm_checklist');
+      localStorage.setItem('ahm_checklist_ver','v2');
+    }
+    const s=localStorage.getItem('ahm_checklist');
+    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
+  }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
+  SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
+}
+function persistSections(){localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));}
+function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
+function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
+function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
+function saveRecordsLS(r){localStorage.setItem('ahm_records',JSON.stringify(r));}
+
+let state={},editingId=null,pendingResult=null;
+function freshState(){const s={};SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{s[sec.id+'_'+i]={rating:1,obs:''}}));return s;}
+
+function showView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  const el=document.getElementById('view'+v[0].toUpperCase()+v.slice(1));
+  if(el)el.classList.add('active');
+  if(v==='records')renderRecords();
+  if(v==='editor'){renderEditor();renderStoreTags();}
+  if(v==='form'){populateStoreDropdown();}
+}
+
+function populateStoreDropdown(){
+  const sel=document.getElementById('storeName');
+  if(!sel||sel.tagName!=='SELECT')return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Select Store —</option>';
+  loadStores().forEach(s=>{const o=document.createElement('option');o.value=s;o.textContent=s;if(s===cur)o.selected=true;sel.appendChild(o);});
+}
+
+function renderStoreTags(){
+  const stores=loadStores();
+  const cont=document.getElementById('storeTags');
+  if(!cont)return;
+  if(!stores.length){cont.innerHTML='<span class="store-empty">No stores yet. Add stores below.</span>';return;}
+  cont.innerHTML=stores.map((s,i)=>`<span class="store-tag">${esc(s)}<button onclick="removeStore(${i})" title="Remove">✕</button></span>`).join('');
+}
+
+
+function bulkUploadStores(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    const text=e.target.result;
+    // Support both newline and comma separated
+    let names=[];
+    const lines=text.split(/\r?\n/);
+    lines.forEach(line=>{
+      // each line could be comma separated too
+      line.split(',').forEach(n=>{
+        const trimmed=n.trim().replace(/^"|"$/g,'').trim();
+        if(trimmed)names.push(trimmed);
+      });
+    });
+    if(!names.length){alert('No store names found in file.');return;}
+    const existing=loadStores();
+    // merge, no duplicates
+    const merged=[...new Set([...existing,...names])];
+    saveStores(merged);
+    renderStoreTags();
+    populateStoreDropdown();
+    alert('✅ '+names.length+' stores uploaded! Total: '+merged.length+' stores.');
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllStores(){
+  if(!confirm('Are you sure you want to clear ALL stores?'))return;
+  saveStores([]);
+  renderStoreTags();
+  populateStoreDropdown();
+}
+
+function downloadSampleCSV(){
+  const sample='BIM - JP ROAD\nBLR - 4TH BLOCK JAYANAGAR\nBLR - KORAMANGALA\nBLR - WHITEFIELD\nBLR - HSR LAYOUT';
+  const blob=new Blob([sample],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download='sample_stores.csv';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+}
+
+function addStore(){
+  const inp=document.getElementById('newStoreInput');
+  const name=(inp.value||'').trim();
+  if(!name){inp.focus();return;}
+  const stores=loadStores();
+  if(stores.some(s=>s.toLowerCase()===name.toLowerCase())){alert('Store "'+name+'" already exists.');return;}
+  stores.push(name);stores.sort((a,b)=>a.localeCompare(b));
+  saveStores(stores);inp.value='';renderStoreTags();populateStoreDropdown();inp.focus();
+
+}
+
+function removeStore(idx){
+  const stores=loadStores();
+  if(!confirm('Remove store "'+stores[idx]+'"?'))return;
+  stores.splice(idx,1);saveStores(stores);renderStoreTags();populateStoreDropdown();
+}
+
+// ═══════════════ AUDIT FORM ═══════════════
+function renderForm(){
+  const c=document.getElementById('secCont');c.innerHTML='';
+  SECTIONS.forEach(sec=>{
+    const tWt=sec.items.reduce((a,x)=>a+x.wt,0);
+    const div=document.createElement('div');div.className='sec';div.id='sec_'+sec.id;
+    div.innerHTML=`<div class="sec-hdr" onclick="togSec('${sec.id}')">
+      <div class="sec-left"><div class="sec-ico" style="background:#f1f5fa;color:#1d4ed8">${sec.icon||'📋'}</div>
+      <div><div class="sec-name">${esc(sec.name)}</div><div class="sec-meta">${sec.items.length} clauses · Wt. Max: ${tWt}</div></div></div>
+      <div style="display:flex;align-items:center;gap:10px"><div class="sec-pill" id="pill_${sec.id}">0 / ${tWt}</div><div class="chev">▼</div></div>
+    </div>
+    <div class="sec-body"><table>
+      <thead><tr><th>#</th><th>Audit Clause</th><th>Risk</th><th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead>
+      <tbody id="tb_${sec.id}"></tbody>
+    </table></div>`;
+    c.appendChild(div);
+    const tb=document.getElementById('tb_'+sec.id);
+    sec.items.forEach((item,idx)=>{
+      const key=sec.id+'_'+idx;
+      const rl={H:'<span class="risk rH">🔴 High</span>',M:'<span class="risk rM">🟡 Med</span>',L:'<span class="risk rL">🟢 Low</span>'}[item.risk]||item.risk;
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td class="td-sno">${idx+1}</td><td class="td-clause">${esc(item.clause)}</td><td class="td-center">${rl}</td>
+        <td class="td-num">${item.wt}</td>
+        <td class="td-rating"><div class="tog"><button id="b1_${key}" onclick="rate('${key}',1)">1</button><button id="bh_${key}" onclick="rate('${key}',0.5)">0.5</button><button id="b0_${key}" onclick="rate('${key}',0)">0</button><button id="bna_${key}" onclick="rate('${key}','na')">NA</button></div></td>
+        <td class="td-obs"><textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" onchange="setObs('${key}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>`;
+      tb.appendChild(tr);rfBtns(key);
+    });
+  });
+  updateScores();
+}
+function togSec(id){document.getElementById('sec_'+id).classList.toggle('closed')}
+function rate(k,v){if(!state[k])state[k]={rating:null,obs:''};state[k].rating=(v==='na'?'na':parseFloat(v));rfBtns(k);updateScores()}
+function setObs(k,v){if(!state[k])state[k]={rating:null,obs:''};state[k].obs=v}
+function rfBtns(k){
+  const r=state[k]?.rating;
+  const el1=document.getElementById('b1_'+k);if(el1)el1.className=(r===1||r==='1')?'a1':'';
+  const elh=document.getElementById('bh_'+k);if(elh)elh.className=(r===0.5||r==='0.5')?'ah':'';
+  const el0=document.getElementById('b0_'+k);if(el0)el0.className=(r===0||r==='0')?'a0':'';
+  const elna=document.getElementById('bna_'+k);if(elna)elna.className=(r==='na')?'ana':'';
+}
+function calcAll(){
+  let tO=0,tM=0;const ss=[];
+  SECTIONS.forEach(sec=>{let sO=0,sM=0;sec.items.forEach((item,idx)=>{const r=state[sec.id+'_'+idx]?.rating;if(r==='na'||r===null||r===undefined)return;sM+=item.wt;const rn=parseFloat(r);if(rn===1)sO+=item.wt;else if(rn===0.5)sO+=item.wt*0.5;});tO+=sO;tM+=sM;ss.push({name:sec.name,icon:sec.icon||'📋',obt:sO,max:sM});});
+  let ar=0,tot=0;SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{tot++;if(state[sec.id+'_'+i]?.rating!==null&&state[sec.id+'_'+i]?.rating!==undefined)ar++;}));
+  tO=Math.round(tO*10)/10;return{tO,tM,pct:tM>0?Math.round(tO/tM*100):0,ar,tot,ss};
+}
+function getRtg(p){if(p>=90)return{lbl:'🟢 Green Zone',cls:'rA',short:'Green Zone'};if(p>=80)return{lbl:'🟡 Yellow Zone',cls:'rB',short:'Yellow Zone'};return{lbl:'🔴 Red Zone',cls:'rC',short:'Red Zone'};}
+function updateScores(){
+  const{tO,tM,pct,ar,tot,ss}=calcAll();
+  document.getElementById('spObt').textContent=tO;document.getElementById('spMax').textContent=tM;
+  const pe=document.getElementById('spPct'),re=document.getElementById('spRating');
+  if(!tM||!ar){pe.textContent='—';re.textContent='—';re.className='rtag rB';}
+  else{pe.textContent=pct+'%';pe.style.color=pct>=90?'var(--green)':pct>=80?'var(--amber)':'var(--red)';const{lbl,cls}=getRtg(pct);re.textContent=lbl;re.className='rtag '+cls;}
+  let si=0;SECTIONS.forEach(sec=>{const pill=document.getElementById('pill_'+sec.id);if(!pill)return;const{obt,max}=ss[si++];pill.textContent=obt+' / '+max;pill.className='sec-pill';if(max>0){const sp=Math.round(obt/max*100);if(sp>=90)pill.classList.add('pill-g');else if(sp>=80)pill.classList.add('pill-w');else pill.classList.add('pill-b');}});
+  document.getElementById('progLbl').textContent=`${ar} of ${tot} items rated`;const pp=tot>0?Math.round(ar/tot*100):0;document.getElementById('progPct').textContent=pp+'%';document.getElementById('progFill').style.width=pp+'%';
+}
+function doSubmit(){
+  // Validate all clauses are rated
+  const unrated=[];
+  SECTIONS.forEach(sec=>{
+    sec.items.forEach((item,idx)=>{
+      const key=sec.id+'_'+idx;
+      const r=state[key]?.rating;
+      if(r===null||r===undefined){
+        unrated.push(sec.name+' → '+item.clause);
+      }
+    });
+  });
+  if(unrated.length>0){
+    alert('⚠️ Please rate all clauses before saving!\n\nUnrated items ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));
+    return;
+  }
+  const{tO,tM,pct,ss}=calcAll();
+  const store=document.getElementById('storeName').value.trim()||'Unnamed Store';
+  const period=document.getElementById('auditPeriod').value||'—';
+  const recId=editingId||('rec_'+Date.now());
+  pendingResult={id:recId,store,period,tO,tM,pct,ss,savedAt:new Date().toISOString(),state:JSON.parse(JSON.stringify(state)),sections:JSON.parse(JSON.stringify(SECTIONS))};
+  document.getElementById('mIco').textContent=pct>=90?'🏆':pct>=80?'📋':'⚠️';
+  document.getElementById('mTitle').textContent=store+' — '+period;
+  document.getElementById('mSub').textContent='Audit Period: '+period;
+  const bn=document.getElementById('mBig');bn.textContent=pct;bn.style.color=pct>=90?'var(--green)':pct>=80?'var(--amber)':'var(--red)';
+  document.getElementById('mObt').textContent=tO;document.getElementById('mMax').textContent=tM;
+  const{lbl}=getRtg(pct);const ev=document.getElementById('mEval');ev.textContent=lbl;ev.style.color=pct>=90?'var(--green)':pct>=80?'var(--amber)':'var(--red)';
+  const bd=document.getElementById('mBreakdown');bd.innerHTML='';
+  ss.forEach(s=>{const sp=s.max>0?Math.round(s.obt/s.max*100):0;const bc=sp>=90?'var(--green)':sp>=80?'#f59e0b':'var(--red)';bd.innerHTML+=`<div class="bd-row"><div class="bd-name">${s.icon} ${esc(s.name)}</div><div class="bd-bar-bg"><div class="bd-bar" style="width:${sp}%;background:${bc}"></div></div><div class="bd-val">${s.obt}/${s.max} (${sp}%)</div></div>`;});
+  document.getElementById('savedBanner').style.display='none';
+  document.getElementById('modalOverlay').classList.add('show');
+}
+function saveRecord(){
+  if(!pendingResult)return;
+  const recs=loadRecords();
+  const idx=recs.findIndex(r=>r.id===pendingResult.id);
+  if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
+  saveRecordsLS(recs);
+  closeModal();
+  showView('records');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
+function editRecord(id){
+  const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
+  if(rec.sections)SECTIONS=JSON.parse(JSON.stringify(rec.sections));
+  editingId=id;document.getElementById('storeName').value=rec.store||'';document.getElementById('auditPeriod').value=rec.period||'';
+  state=JSON.parse(JSON.stringify(rec.state));
+  populateStoreDropdown();
+  document.getElementById('storeName').value=rec.store||'';
+  renderForm();
+  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}}));
+  document.getElementById('editBanner').style.display='flex';
+  document.getElementById('submitBtn').textContent='Update & Save →';
+  showView('form');window.scrollTo({top:0,behavior:'smooth'});
+}
+function cancelEdit(){
+  loadSections();editingId=null;state=freshState();
+  document.getElementById('editBanner').style.display='none';
+  document.getElementById('submitBtn').textContent='Submit & Save →';
+  document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';
+  renderForm();
+}
+function newAudit(){cancelEdit();showView('form');}
+function deleteRecord(id){
+  if(!confirm('Delete this record?'))return;
+  saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();
+
+}
+
+// ═══════════════ RECORDS LIST ═══════════════
+function renderRecords(){
+  const search=(document.getElementById('searchInput')?.value||'').toLowerCase().trim();
+  const fm=document.getElementById('filterMonth')?.value||'';
+  const fz=document.getElementById('filterZone')?.value||'';
+  let recs=loadRecords();
+  if(fm)recs=recs.filter(r=>r.period===fm);
+  if(fz==='green')recs=recs.filter(r=>r.pct>=90);
+  else if(fz==='yellow')recs=recs.filter(r=>r.pct>=80&&r.pct<90);
+  else if(fz==='red')recs=recs.filter(r=>r.pct<80);
+  if(search)recs=recs.filter(r=>(r.store||'').toLowerCase().includes(search));
+  const el=document.getElementById('recordsList');
+  if(!loadRecords().length){el.innerHTML=`<div class="empty-state"><div class="ei">📭</div><p>No saved audits yet.</p></div>`;return;}
+  if(!recs.length){el.innerHTML=`<div class="empty-state"><div class="ei">🔍</div><p>No records match your search.</p></div>`;return;}
+  const byMonth={};recs.forEach(r=>{const m=r.period||'Unknown';if(!byMonth[m])byMonth[m]=[];byMonth[m].push(r);});
+  el.innerHTML='';
+  [...MONTHS,'Unknown'].forEach(month=>{
+    if(!byMonth[month])return;
+    el.innerHTML+=`<div class="month-label">${month}</div>`;
+    byMonth[month].forEach(rec=>{
+      const{short}=getRtg(rec.pct);const tc=rec.pct>=90?'rA':rec.pct>=80?'rB':'rC';const pc=rec.pct>=90?'var(--green)':rec.pct>=80?'var(--amber)':'var(--red)';
+      const saved=rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
+      el.innerHTML+=`<div class="record-card">
+        <div class="rc-top"><div><div class="rc-store">${esc(rec.store||'Unnamed')}</div><div class="rc-meta">${rec.period||'—'} · Saved: ${saved}</div></div>
+        <div class="rc-right"><div class="rc-pct" style="color:${pc}">${rec.pct}%</div><div class="rc-tag ${tc}">${short}</div></div></div>
+        <div class="rc-btns"><button class="btn-sm btn-edit-sm" onclick="editRecord('${rec.id}')">✏️ Edit</button><button class="btn-sm" style="background:#fff0f0;color:#dc2626;border:1px solid #fecaca" onclick="downloadSingleReport('${rec.id}')">📄 Download Report</button><button class="btn-sm btn-del-sm" onclick="deleteRecord('${rec.id}')">🗑 Delete</button></div>
+      </div>`;
+    });
+  });
+}
+
+// ═══════════════ CHECKLIST EDITOR ═══════════════
+function renderEditor(){
+  const cont=document.getElementById('editorSecs');cont.innerHTML='';
+  SECTIONS.forEach((sec,si)=>{
+    const secDiv=document.createElement('div');secDiv.className='esec';secDiv.id='esec_'+si;
+    const totalWt=sec.items.reduce((a,x)=>a+(parseInt(x.wt)||0),0);
+    secDiv.innerHTML=`
+      <div class="esec-hdr">
+        <input class="esec-ico-input" type="text" value="${esc(sec.icon||'📋')}" placeholder="📋" oninput="SECTIONS[${si}].icon=this.value;updCedStats()" maxlength="4"/>
+        <input class="esec-name-input" type="text" value="${esc(sec.name)}" placeholder="Section name…" oninput="SECTIONS[${si}].name=this.value;updCedStats()"/>
+        <span style="font-size:11px;color:var(--muted);font-family:var(--mono);white-space:nowrap;margin-right:4px">${sec.items.length} clauses · ${totalWt} pts</span>
+        <button class="btn-del-sec" onclick="deleteSection(${si})">🗑 Remove</button>
+      </div>
+      <div class="eclauses" id="ecl_${si}">
+        <div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>
+        ${sec.items.map((item,ci)=>clauseRowHTML(si,ci,item)).join('')}
+        <button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>
+      </div>`;
+    cont.appendChild(secDiv);
+  });
+  updCedStats();
+}
+function clauseRowHTML(si,ci,item){
+  return `<div class="eclause-row" id="erow_${si}_${ci}">
+    <input type="text" value="${esc(item.clause)}" placeholder="Enter audit clause…" oninput="SECTIONS[${si}].items[${ci}].clause=this.value;updCedStats()"/>
+    <select onchange="SECTIONS[${si}].items[${ci}].risk=this.value;updCedStats()">
+      <option value="H"${item.risk==='H'?' selected':''}>🔴 High</option>
+      <option value="M"${item.risk==='M'?' selected':''}>🟡 Medium</option>
+      <option value="L"${item.risk==='L'?' selected':''}>🟢 Low</option>
+    </select>
+    <input type="number" min="1" max="20" value="${item.wt||5}" oninput="SECTIONS[${si}].items[${ci}].wt=parseInt(this.value)||1;updCedStats()"/>
+    <button class="btn-del-clause" onclick="deleteClause(${si},${ci})" title="Remove">✕</button>
+  </div>`;
+}
+function addSection(){SECTIONS.push({id:'sec_'+Date.now(),name:'New Section',icon:'📋',items:[{clause:'',risk:'M',wt:5}]});renderEditor();setTimeout(()=>{const el=document.getElementById('esec_'+(SECTIONS.length-1));if(el)el.scrollIntoView({behavior:'smooth',block:'center'});},100);}
+function deleteSection(si){if(!confirm('Remove section "'+SECTIONS[si].name+'" and all its clauses?'))return;SECTIONS.splice(si,1);renderEditor();}
+function addClause(si){
+  SECTIONS[si].items.push({clause:'',risk:'M',wt:5});
+  const cont=document.getElementById('ecl_'+si);
+  cont.innerHTML=`<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>`+SECTIONS[si].items.map((item,ci)=>clauseRowHTML(si,ci,item)).join('')+`<button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>`;
+  updCedStats();
+  setTimeout(()=>{const rows=cont.querySelectorAll('.eclause-row');if(rows.length){const inp=rows[rows.length-1].querySelector('input[type=text]');if(inp){inp.focus();inp.scrollIntoView({behavior:'smooth',block:'center'});}}},50);
+}
+function deleteClause(si,ci){
+  if(SECTIONS[si].items.length<=1){alert('A section must have at least one clause.');return;}
+  if(!confirm('Remove this clause?'))return;
+  SECTIONS[si].items.splice(ci,1);
+  const cont=document.getElementById('ecl_'+si);
+  cont.innerHTML=`<div class="eclause-labels"><span>Audit Clause</span><span>Risk Level</span><span>Wt.Score</span><span></span></div>`+SECTIONS[si].items.map((item,ci2)=>clauseRowHTML(si,ci2,item)).join('')+`<button class="btn-add-clause" onclick="addClause(${si})">＋ Add Clause</button>`;
+  updCedStats();
+}
+function updCedStats(){
+  const tS=SECTIONS.length,tC=SECTIONS.reduce((a,s)=>a+s.items.length,0),tW=SECTIONS.reduce((a,s)=>a+s.items.reduce((b,x)=>b+(parseInt(x.wt)||0),0),0);
+  const el=document.getElementById('cedStats');if(el)el.innerHTML=`<strong>${tS}</strong> sections · <strong>${tC}</strong> clauses · <strong>${tW}</strong> total weighted marks`;
+}
+
+function resetChecklist(){
+  if(!confirm('Reset checklist to default? This will clear all your custom edits.'))return;
+  localStorage.removeItem('ahm_checklist');
+  loadSections();
+  state=freshState();
+  renderForm();
+  renderEditor();
+  renderStoreTags();
+  alert('✅ Checklist reset to default!');
+}
+
+function saveChecklist(){
+  let empty=false;SECTIONS.forEach(sec=>sec.items.forEach(item=>{if(!item.clause.trim())empty=true;}));
+  if(empty){alert('Please fill in all clause text before saving.');return;}
+  if(!SECTIONS.length){alert('You must have at least one section.');return;}
+  persistSections();state=freshState();
+  const f=document.getElementById('cedFlash');f.style.display='block';setTimeout(()=>f.style.display='none',2500);
+}
+function resetChecklist(){
+  if(!confirm('Reset checklist to default? All custom changes will be lost.'))return;
+  localStorage.removeItem('ahm_checklist');loadSections();renderEditor();state=freshState();
+}
+
+// ═══════════════ EXPORT ═══════════════
+function getSelMonth(){const m=document.getElementById('exportMonth').value;if(!m){alert('Please select a month.');return null;}return m;}
+function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records found for '+m+'.');return null;}return r;}
+function showLoad(t,s){document.getElementById('loadingTxt').textContent=t;document.getElementById('loadingSub').textContent=s||'Please wait…';document.getElementById('loadingOverlay').classList.add('show');}
+function hideLoad(){document.getElementById('loadingOverlay').classList.remove('show');}
+
+function buildStoreHTMLBlob(rec,month){
+  const{short}=getRtg(rec.pct);
+  const sc=rec.pct>=90?'#059669':rec.pct>=80?'#d97706':'#dc2626';
+  const riskLabel={H:'High Risk',M:'Medium Risk',L:'Low Risk'};
+  const recSections=rec.sections||SECTIONS;
+  let bdRows='';
+  rec.ss.forEach(s=>{
+    const sp=s.max>0?Math.round(s.obt/s.max*100):0;
+    const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';
+    bdRows+=`<tr><td>${esc(s.name)}</td><td style="text-align:center">${s.obt} / ${s.max}</td><td style="text-align:center;color:${bc};font-weight:700">${sp}%</td></tr>`;
+  });
+  let detRows='';
+  recSections.forEach(sec=>{
+    let sO=0,sM=0;
+    sec.items.forEach((item,idx)=>{const r=rec.state[sec.id+'_'+idx]?.rating;if(r!=='na'&&r!==null&&r!==undefined){sM+=item.wt;if(r===1)sO+=item.wt;else if(r===0.5)sO+=item.wt*0.5;}});
+    detRows+=`<tr style="background:#f0f4f8"><td colspan="5" style="font-weight:700;font-size:12px;color:#1e3a5f;padding:7px 10px">${sec.icon||''} ${esc(sec.name)} <span style="font-weight:400;color:#64748b">(${sO}/${sM} pts)</span></td></tr>`;
+    sec.items.forEach((item,idx)=>{
+      const r=rec.state[sec.id+'_'+idx]?.rating;
+      const obs=rec.state[sec.id+'_'+idx]?.obs||'';
+      const rd=r===null?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
+      const rc=r===1?'#059669':r===0?'#dc2626':'#94a3b8';
+      detRows+=`<tr><td style="text-align:center;color:#94a3b8;width:28px">${idx+1}</td><td style="font-size:11px;line-height:1.5">${esc(item.clause)}</td><td style="text-align:center;font-size:11px">${riskLabel[item.risk]||item.risk}</td><td style="text-align:center;font-weight:700;color:${rc}">${rd}</td><td style="font-size:11px;color:#64748b">${esc(obs)}</td></tr>`;
+    });
+  });
+  const dateStr=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
+<style>
+@media print{.no-print{display:none!important}@page{margin:15mm}}
+body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;margin:0;padding:0;background:#f8fafc;font-size:12px}
+.page{max-width:900px;margin:0 auto;padding:20px;background:#fff}
+.hdr-bar{background:linear-gradient(135deg,#0f1f3d,#1a3260);color:#fff;padding:16px 22px;border-radius:10px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.hdr-bar h1{font-size:17px;margin:0;font-weight:700}
+.hdr-bar p{font-size:10px;opacity:.6;margin:3px 0 0}
+.hdr-actions{display:flex;align-items:center;gap:10px}
+.gen-date{font-size:10px;opacity:.65}
+.print-btn{padding:7px 16px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:12px;cursor:pointer}
+.score-card{display:flex;align-items:center;justify-content:space-between;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:16px 22px;margin-bottom:16px;gap:16px;flex-wrap:wrap}
+.store-name{font-size:20px;font-weight:800;color:#0f1f3d}
+.period-lbl{font-size:12px;color:#64748b;margin-top:3px}
+.score-badge{text-align:center;background:#fff;border-radius:10px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}
+.score-pct{font-size:36px;font-weight:800;color:${sc}}
+.score-zone{font-size:12px;font-weight:700;color:${sc};margin-top:2px}
+.score-pts{font-size:10px;color:#64748b;margin-top:2px}
+.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#1d4ed8;font-weight:700;margin:16px 0 8px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}
+table{width:100%;border-collapse:collapse;margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #e2e8f0}
+th{background:#f0f4f8;padding:8px 11px;font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:#64748b;text-align:left;font-weight:600}
+td{padding:8px 11px;border-bottom:1px solid #f0f2f5;vertical-align:top}
+tr:last-child td{border-bottom:none}
+.rating-1{color:#059669;font-weight:700}.rating-0{color:#dc2626;font-weight:700}.rating-na{color:#94a3b8}
+.footer{margin-top:24px;padding-top:12px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+</style></head><body>
+<div class="page">
+<div class="hdr-bar">
+  <div><h1>🏪 Operation Scorecard</h1><p>Store Operations Audit Report</p></div>
+  <div class="hdr-actions"><span class="gen-date no-print">Generated: ${dateStr}</span><button class="print-btn no-print" onclick="window.print()">🖨 Print / Save PDF</button></div>
+</div>
+<div class="score-card">
+  <div>
+    <div class="store-name">${esc(rec.store||'Unnamed Store')}</div>
+    <div class="period-lbl">📅 Audit Period: ${rec.period||'—'}</div>
+    <div class="period-lbl">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
+  </div>
+  <div class="score-badge">
+    <div class="score-pct">${rec.pct}%</div>
+    <div class="score-zone">${short}</div>
+    <div class="score-pts">${rec.tO} / ${rec.tM} weighted pts</div>
+  </div>
+</div>
+<div class="sec-title">Section-wise Breakdown</div>
+<table><thead><tr><th>Section</th><th style="text-align:center">Score</th><th style="text-align:center">Max</th><th style="text-align:center">%</th></tr></thead><tbody>${bdRows}</tbody></table>
+<div class="sec-title">Detailed Audit Responses</div>
+<table><thead><tr><th style="width:28px">#</th><th>Audit Clause</th><th style="text-align:center">Risk</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead><tbody>${detRows}</tbody></table>
+<div class="footer"><span>Operation Scorecard System</span><span>© ${new Date().getFullYear()} AHM Operations</span></div>
+</div></body></html>`;
+}
+
+function exportAllPDF(){
+  const month=getSelMonth();if(!month)return;
+  const recs=getMonthRecs(month);if(!recs)return;
+  showLoad('Preparing '+recs.length+' report(s)…','Downloading for '+month);
+  setTimeout(()=>{
+    try{
+      recs.forEach(rec=>{
+        const html=buildStoreHTMLBlob(rec,month);
+        const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url;a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
+        document.body.appendChild(a);a.click();
+        setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+      });
+      hideLoad();
+    }catch(e){hideLoad();alert('Error: '+e.message);}
+  },200);
+}
+
+function exportAllExcel(){
+  const month=document.getElementById('exportMonth').value;
+  if(!month){alert('Please select a month first.');return;}
+  const recs=loadRecords().filter(r=>r.period===month);
+  if(!recs.length){alert('No records found for '+month+'.');return;}
+  try{
+    // Summary sheet
+    let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
+    recs.forEach(r=>{
+      const{short}=getRtg(r.pct);
+      csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';
+    });
+    // Detailed responses
+    csv+='\n\nDetailed Responses\n';
+    csv+='Store,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
+    recs.forEach(rec=>{
+      const secs=rec.sections||SECTIONS;
+      secs.forEach(sec=>{
+        const items=sec.items||sec.clauses||[];
+        items.forEach((item,idx)=>{
+          const key=sec.id+'_'+idx;
+          const st=rec.state&&rec.state[key];
+          const r=st?st.rating:null;
+          const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);
+          const obs=st?st.obs||'':'';
+          csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||item.name||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||item.risk||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';
+        });
+      });
+    });
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download='OpScorecard_'+month+'.csv';
+    document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+  }catch(e){alert('Export error: '+e.message);}
+}
+
+// ═══════════════ LOCAL STORAGE ONLY ═══════════════
+
+
+function downloadSingleReport(id){
+  const rec=loadRecords().find(r=>r.id===id);
+  if(!rec){alert('Record not found.');return;}
+  const month=rec.period||'Report';
+  const html=buildStoreHTMLBlob(rec,month);
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);
+}
+
+// ═══════════════ HELPERS ═══════════════
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ═══════════════ INIT ═══════════════
+loadSections();
+state=freshState();
+populateStoreDropdown();
+renderForm();
+
+</script>
+</body>
+</html>
