@@ -734,6 +734,7 @@ function saveRecord(){
   const recs=loadRecords();const idx=recs.findIndex(r=>r.id===pendingResult.id);
   if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
   saveRecordsLS(recs);closeModal();showView('scoreTable');
+  pushToSheets(true); // auto-push silently after every save
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
 function renderScoreTable(){
@@ -1190,60 +1191,65 @@ function exportGapCSV(){
 }
 function esc2(s){return String(s||'').replace(/"/g,'""');}
 
-/* ===== SYNC DATA (EXPORT / IMPORT) ===== */
+/* ===== SYNC DATA (AUTO via Google Sheets) ===== */
 function openSyncModal(){
   document.getElementById('syncModal').style.display='flex';
   document.getElementById('syncStatus').textContent='';
   const recs=loadRecords();const stores=loadStores();
-  document.getElementById('syncInfo').textContent=recs.length+' audit records · '+stores.length+' stores';
+  const last=localStorage.getItem('ahm_last_sync');
+  document.getElementById('syncInfo').textContent=recs.length+' records · '+stores.length+' stores'+(last?' · Last sync: '+last:'');
 }
 function closeSyncModal(){document.getElementById('syncModal').style.display='none';}
 
-function exportAllData(){
-  const payload={records:loadRecords(),stores:loadStores(),checklist:JSON.parse(localStorage.getItem('ahm_checklist')||'null'),exportedAt:new Date().toISOString(),version:'v1'};
-  const json=JSON.stringify(payload,null,2);
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));
-  a.download='OpScorecard_Backup_'+new Date().toISOString().slice(0,10)+'.json';
-  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
-  document.getElementById('syncStatus').style.color='#059669';
-  document.getElementById('syncStatus').textContent='✅ Data exported! Share this file with the other system.';
+async function pushToSheets(silent){
+  const url=getGsUrl();if(!url)return;
+  const payload=JSON.stringify({records:loadRecords(),stores:loadStores(),backedUpAt:new Date().toISOString()});
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
+    localStorage.setItem('ahm_last_sync',new Date().toLocaleString());
+    if(!silent){
+      document.getElementById('syncStatus').style.color='#059669';
+      document.getElementById('syncStatus').textContent='✅ Pushed to Google Sheets successfully!';
+      document.getElementById('syncInfo').textContent=loadRecords().length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+    }
+  }catch(e){if(!silent){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Push failed: '+e.message;}}
 }
 
-function importAllData(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      const data=JSON.parse(e.target.result);
-      if(!data.records&&!data.stores){throw new Error('Invalid backup file.');}
-      const existing=loadRecords();
-      const incoming=data.records||[];
-      // Merge: incoming records win if same id, new records added
-      const merged=[...existing];
-      incoming.forEach(rec=>{
-        const idx=merged.findIndex(r=>r.id===rec.id);
-        if(idx>=0)merged[idx]=rec;else merged.push(rec);
-      });
-      merged.sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
-      saveRecordsLS(merged);
-      if(data.stores&&data.stores.length){
-        const mergedStores=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
-        saveStores(mergedStores);
-      }
-      if(data.checklist){localStorage.setItem('ahm_checklist',JSON.stringify(data.checklist));}
-      const added=incoming.filter(r=>!existing.find(x=>x.id===r.id)).length;
-      const updated=incoming.filter(r=>existing.find(x=>x.id===r.id)).length;
-      document.getElementById('syncStatus').style.color='#059669';
-      document.getElementById('syncStatus').textContent='✅ Import done! '+added+' new records added, '+updated+' updated. Reload the page to see all data.';
-      document.getElementById('syncInfo').textContent=merged.length+' total records now';
-    }catch(err){
-      document.getElementById('syncStatus').style.color='#dc2626';
-      document.getElementById('syncStatus').textContent='❌ Error: '+err.message;
-    }
-    input.value='';
-  };
-  reader.readAsText(file);
+async function pullFromSheets(){
+  const url=getGsUrl();
+  if(!url){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Apps Script URL not set.';return;}
+  const btn=document.getElementById('pullBtn');
+  btn.disabled=true;btn.textContent='Pulling…';
+  document.getElementById('syncStatus').textContent='';
+  try{
+    const res=await fetch(url+'?action=read',{method:'GET',redirect:'follow'});
+    const data=await res.json();
+    if(!data.records){throw new Error('No records in response.');}
+    mergeIncoming(data);
+    const last=new Date().toLocaleString();
+    localStorage.setItem('ahm_last_sync',last);
+    document.getElementById('syncStatus').style.color='#059669';
+    document.getElementById('syncStatus').textContent='✅ Pulled '+data.records.length+' records from Sheets. Page will reload…';
+    document.getElementById('syncInfo').textContent=loadRecords().length+' records now · Last sync: '+last;
+    setTimeout(()=>location.reload(),1800);
+  }catch(e){
+    document.getElementById('syncStatus').style.color='#dc2626';
+    document.getElementById('syncStatus').textContent='❌ Pull failed: '+e.message+'. Make sure you updated the Apps Script code (see ☁️ Sheets Backup).';
+  }
+  btn.disabled=false;btn.textContent='⬇️ Pull from Sheets';
+}
+
+function mergeIncoming(data){
+  const existing=loadRecords();
+  const incoming=data.records||[];
+  const merged=[...existing];
+  incoming.forEach(rec=>{const idx=merged.findIndex(r=>r.id===rec.id);if(idx>=0)merged[idx]=rec;else merged.push(rec);});
+  merged.sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+  saveRecordsLS(merged);
+  if(data.stores&&data.stores.length){
+    const ms=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
+    saveStores(ms);
+  }
 }
 
 /* ===== GOOGLE SHEETS BACKUP ===== */
@@ -1292,27 +1298,27 @@ loadSections();state=freshState();populateStoreDropdown();renderForm();
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
       <div>
         <div style="font-size:17px;font-weight:700;color:#0f1f3d">🔄 Sync Data Across Systems</div>
-        <div style="font-size:12px;color:#64748b;margin-top:3px">Export from this system · Import on another</div>
+        <div style="font-size:12px;color:#64748b;margin-top:3px">Uses Google Sheets as the sync hub</div>
       </div>
       <button onclick="closeSyncModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b">✕</button>
     </div>
 
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:13px 15px;margin-bottom:20px;font-size:12.5px;color:#065f46;line-height:1.7">
-      <strong>How to sync:</strong><br>
-      1. On <strong>System A</strong> → click <strong>Export All Data</strong> → save the .json file<br>
-      2. Transfer the file (WhatsApp, email, USB, Google Drive…)<br>
-      3. On <strong>System B</strong> → click <strong>Import Data</strong> → select the file<br>
-      4. Records from both systems are <strong>merged automatically</strong>
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:13px 15px;margin-bottom:18px;font-size:12.5px;color:#1e40af;line-height:1.7">
+      <strong>How it works:</strong><br>
+      ✅ Every time you <strong>save an audit</strong>, it auto-pushes to Google Sheets<br>
+      📥 On any other system, click <strong>Pull from Sheets</strong> to get all records<br>
+      No file transfer needed — Google Sheets is the sync hub
     </div>
 
-    <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:14px;font-family:var(--mono)"></div>
+    <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:16px;font-family:var(--mono);background:#f8fafc;padding:8px 12px;border-radius:7px"></div>
 
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <button onclick="exportAllData()" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">📤 Export All Data</button>
-      <label style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;text-align:center">
-        📥 Import Data
-        <input type="file" accept=".json" style="display:none" onchange="importAllData(this)"/>
-      </label>
+      <button onclick="pushToSheets(false)" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬆️ Push to Sheets</button>
+      <button id="pullBtn" onclick="pullFromSheets()" style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬇️ Pull from Sheets</button>
+    </div>
+
+    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 13px;font-size:11.5px;color:#78350f;margin-bottom:12px">
+      ⚠️ <strong>One-time setup needed:</strong> Update your Apps Script with the new code from <strong>☁️ Sheets Backup</strong> to enable Pull. Push works without any changes.
     </div>
 
     <div id="syncStatus" style="font-size:13px;min-height:20px;line-height:1.5"></div>
@@ -1351,19 +1357,55 @@ loadSections();state=freshState();populateStoreDropdown();renderForm();
 
     <details style="margin-top:14px">
       <summary style="font-size:12px;color:#1d4ed8;cursor:pointer;font-weight:600">📋 Apps Script Code (click to expand)</summary>
-      <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">function doPost(e) {
+      <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">// ===== PUSH (auto-called on every audit save) =====
+function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    writeRecords(ss, data.records || []);
+    saveRawRecords(ss, data.records || []);
     writeStores(ss, data.stores || []);
+    writeSummary(ss, data.records || []);
     writeLog(ss, data.backedUpAt);
+  } catch(err) { Logger.log(err); }
+}
+
+// ===== PULL (called when syncing to another system) =====
+function doGet(e) {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var records = getRawRecords(ss);
+    var stores = getStores(ss);
+    return ContentService
+      .createTextOutput(JSON.stringify({records: records, stores: stores}))
+      .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
-    Logger.log(err);
+    return ContentService
+      .createTextOutput(JSON.stringify({error: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-function writeRecords(ss, records) {
+function saveRawRecords(ss, records) {
+  var sheet = ss.getSheetByName('RawData') || ss.insertSheet('RawData');
+  sheet.clearContents();
+  sheet.appendRow(['ID', 'JSON', 'Store', 'Period', 'Score%', 'Saved At']);
+  records.forEach(function(r) {
+    sheet.appendRow([r.id, JSON.stringify(r), r.store, r.period, r.pct+'%', r.savedAt]);
+  });
+}
+
+function getRawRecords(ss) {
+  var sheet = ss.getSheetByName('RawData');
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getValues();
+  var records = [];
+  for (var i = 1; i < data.length; i++) {
+    try { records.push(JSON.parse(data[i][1])); } catch(e) {}
+  }
+  return records;
+}
+
+function writeSummary(ss, records) {
   var sheet = ss.getSheetByName('Records') || ss.insertSheet('Records');
   sheet.clearContents();
   sheet.appendRow(['#','Store','Period','Score Obtained','Max Score','Percentage','Zone','Saved At']);
@@ -1380,9 +1422,18 @@ function writeStores(ss, stores) {
   stores.forEach(function(s) { sheet.appendRow([s]); });
 }
 
+function getStores(ss) {
+  var sheet = ss.getSheetByName('Stores');
+  if (!sheet) return [];
+  var data = sheet.getDataRange().getValues();
+  var stores = [];
+  for (var i = 1; i < data.length; i++) { if (data[i][0]) stores.push(data[i][0]); }
+  return stores;
+}
+
 function writeLog(ss, ts) {
   var sheet = ss.getSheetByName('BackupLog') || ss.insertSheet('BackupLog');
-  sheet.appendRow([new Date(), ts, 'Backup completed']);
+  sheet.appendRow([new Date(), ts, 'Sync completed']);
 }</pre>
       <button onclick="navigator.clipboard.writeText(document.getElementById('gsCode').textContent).then(()=>alert('Copied!'))"
         style="margin-top:8px;padding:6px 14px;background:#1d4ed8;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer">📋 Copy Code</button>
