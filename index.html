@@ -1215,28 +1215,39 @@ async function pushToSheets(silent){
   }catch(e){if(!silent){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Push failed: '+e.message;}}
 }
 
-async function pullFromSheets(){
+async function pullFromSheets(silent){
   const url=getGsUrl();
-  if(!url){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Apps Script URL not set.';return;}
-  const btn=document.getElementById('pullBtn');
-  btn.disabled=true;btn.textContent='Pulling…';
-  document.getElementById('syncStatus').textContent='';
+  if(!url){if(!silent){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Apps Script URL not set.';}return;}
+  if(!silent){const btn=document.getElementById('pullBtn');btn.disabled=true;btn.textContent='Pulling…';document.getElementById('syncStatus').textContent='';}
   try{
     const res=await fetch(url+'?action=read',{method:'GET',redirect:'follow'});
     const data=await res.json();
     if(!data.records){throw new Error('No records in response.');}
+    const before=loadRecords().length;
     mergeIncoming(data);
+    const after=loadRecords().length;
+    const added=after-before;
     const last=new Date().toLocaleString();
     localStorage.setItem('ahm_last_sync',last);
-    document.getElementById('syncStatus').style.color='#059669';
-    document.getElementById('syncStatus').textContent='✅ Pulled '+data.records.length+' records from Sheets. Page will reload…';
-    document.getElementById('syncInfo').textContent=loadRecords().length+' records now · Last sync: '+last;
-    setTimeout(()=>location.reload(),1800);
+    if(!silent){
+      document.getElementById('syncStatus').style.color='#059669';
+      document.getElementById('syncStatus').textContent='✅ Pulled '+data.records.length+' records. Page will reload…';
+      document.getElementById('syncInfo').textContent=after+' records now · Last sync: '+last;
+      setTimeout(()=>location.reload(),1800);
+    } else {
+      if(added>0){
+        showSyncToast(added+' new record'+(added>1?'s':'')+' synced from Sheets');
+        refreshCurrentView();
+      }
+      updateSyncBadge(last);
+    }
   }catch(e){
-    document.getElementById('syncStatus').style.color='#dc2626';
-    document.getElementById('syncStatus').textContent='❌ Pull failed: '+e.message+'. Make sure you updated the Apps Script code (see ☁️ Sheets Backup).';
+    if(!silent){
+      document.getElementById('syncStatus').style.color='#dc2626';
+      document.getElementById('syncStatus').textContent='❌ Pull failed: '+e.message;
+    }
   }
-  btn.disabled=false;btn.textContent='⬇️ Pull from Sheets';
+  if(!silent){const btn=document.getElementById('pullBtn');if(btn){btn.disabled=false;btn.textContent='⬇️ Pull from Sheets';}}
 }
 
 function mergeIncoming(data){
@@ -1250,6 +1261,27 @@ function mergeIncoming(data){
     const ms=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
     saveStores(ms);
   }
+}
+
+function refreshCurrentView(){
+  const active=document.querySelector('.view.active');
+  if(!active)return;
+  const id=active.id;
+  if(id==='viewScoreTable')renderScoreTable();
+  else if(id==='viewRecords')renderRecords();
+  else if(id==='viewGapAnalysis')renderGapAnalysis();
+}
+
+function showSyncToast(msg){
+  let t=document.getElementById('syncToast');
+  if(!t){t=document.createElement('div');t.id='syncToast';t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f1f3d;color:#fff;padding:10px 22px;border-radius:30px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);transition:opacity .4s';document.body.appendChild(t);}
+  t.textContent='🔄 '+msg;t.style.opacity='1';
+  clearTimeout(t._timer);t._timer=setTimeout(()=>t.style.opacity='0',3000);
+}
+
+function updateSyncBadge(last){
+  const el=document.getElementById('syncInfo');
+  if(el)el.textContent=loadRecords().length+' records · Last sync: '+last;
 }
 
 /* ===== GOOGLE SHEETS BACKUP ===== */
@@ -1290,6 +1322,9 @@ async function runGsBackup(){
 }
 
 loadSections();state=freshState();populateStoreDropdown();renderForm();
+// Auto-sync: pull on page load + every 5 minutes silently
+setTimeout(()=>pullFromSheets(true),3000);
+setInterval(()=>pullFromSheets(true),5*60*1000);
 </script>
 
 <!-- Sync Data Modal -->
@@ -1314,7 +1349,7 @@ loadSections();state=freshState();populateStoreDropdown();renderForm();
 
     <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <button onclick="pushToSheets(false)" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬆️ Push to Sheets</button>
-      <button id="pullBtn" onclick="pullFromSheets()" style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬇️ Pull from Sheets</button>
+      <button id="pullBtn" onclick="pullFromSheets(false)" style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬇️ Pull from Sheets</button>
     </div>
 
     <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 13px;font-size:11.5px;color:#78350f;margin-bottom:12px">
