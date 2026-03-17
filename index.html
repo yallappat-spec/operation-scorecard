@@ -73,6 +73,11 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .td-num{text-align:center;font-family:var(--mono);font-size:12px;color:var(--muted);width:60px}
 .td-rating{width:130px;text-align:center}
 .td-obs{min-width:160px}
+.img-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;background:#f0f9ff;border:1.5px solid #bfdbfe;border-radius:7px;font-size:11px;font-weight:600;color:#1d4ed8;cursor:pointer;margin-top:5px;white-space:nowrap}
+.img-btn:hover{background:#dbeafe}
+.img-btn.has-img{background:#d1fae5;border-color:#6ee7b7;color:#065f46}
+.img-preview{max-width:120px;max-height:80px;border-radius:6px;border:1px solid var(--border);margin-top:5px;display:block;cursor:pointer}
+.img-remove{font-size:10px;color:#dc2626;cursor:pointer;margin-left:4px;font-weight:600}
 .tog{display:inline-flex;border:1.5px solid var(--border);border-radius:8px;overflow:hidden;background:#f8fafc}
 .tog button{padding:6px 13px;font-size:12.5px;font-weight:600;font-family:var(--mono);border:none;background:transparent;cursor:pointer;color:var(--muted);border-right:1px solid var(--border);outline:none}
 .tog button:last-child{border-right:none}
@@ -669,7 +674,7 @@ function renderForm(){
       <div><div class="sec-name">${esc(sec.name)}</div><div class="sec-meta">${sec.items.length} clauses · Wt. Max: ${tWt}</div></div></div>
       <div style="display:flex;align-items:center;gap:10px"><div class="sec-pill" id="pill_${sec.id}">0 / ${tWt}</div><div class="chev">▼</div></div>
     </div>
-    <div class="sec-body"><table><thead><tr><th>#</th><th>Audit Clause</th><th>Risk</th><th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th><th>Observation</th></tr></thead><tbody id="tb_${sec.id}"></tbody></table></div>`;
+    <div class="sec-body"><table><thead><tr><th>#</th><th>Audit Clause</th><th>Risk</th><th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th><th>Observation / Photo</th></tr></thead><tbody id="tb_${sec.id}"></tbody></table></div>`;
     c.appendChild(div);
     const tb=document.getElementById('tb_'+sec.id);
     sec.items.forEach((item,idx)=>{
@@ -678,7 +683,13 @@ function renderForm(){
       const tr=document.createElement('tr');
       tr.innerHTML=`<td class="td-sno">${idx+1}</td><td class="td-clause">${esc(item.clause)}</td><td class="td-center">${rl}</td><td class="td-num">${item.wt}</td>
         <td class="td-rating"><div class="tog"><button id="b1_${key}" onclick="rate('${key}',1)">1</button><button id="bh_${key}" onclick="rate('${key}',0.5)">0.5</button><button id="b0_${key}" onclick="rate('${key}',0)">0</button><button id="bna_${key}" onclick="rate('${key}','na')">NA</button></div></td>
-        <td class="td-obs"><textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" onchange="setObs('${key}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea></td>`;
+        <td class="td-obs">
+          <textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" onchange="setObs('${key}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            <label class="img-btn" id="imgbtn_${key}">📷 Attach Photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="attachImg('${key}',this)"/></label>
+            <span id="imgrem_${key}" style="display:none"><img id="imgprev_${key}" class="img-preview" onclick="viewImg('${key}')"/><span class="img-remove" onclick="removeImg('${key}')">✕ Remove</span></span>
+          </div>
+        </td>`;
       tb.appendChild(tr);rfBtns(key);
     });
   });updateScores();
@@ -686,6 +697,63 @@ function renderForm(){
 function togSec(id){document.getElementById('sec_'+id).classList.toggle('closed')}
 function rate(k,v){if(!state[k])state[k]={rating:null,obs:''};state[k].rating=(v==='na'?'na':parseFloat(v));rfBtns(k);updateScores()}
 function setObs(k,v){if(!state[k])state[k]={rating:null,obs:''};state[k].obs=v}
+
+function attachImg(k,input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    compressImage(e.target.result,400,0.6,function(compressed){
+      if(!state[k])state[k]={rating:null,obs:''};
+      state[k].img=compressed;
+      renderImgPreview(k,compressed);
+    });
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function compressImage(src,maxW,quality,cb){
+  const img=new Image();
+  img.onload=function(){
+    const scale=Math.min(1,maxW/img.width);
+    const w=Math.round(img.width*scale);
+    const h=Math.round(img.height*scale);
+    const canvas=document.createElement('canvas');
+    canvas.width=w;canvas.height=h;
+    canvas.getContext('2d').drawImage(img,0,0,w,h);
+    cb(canvas.toDataURL('image/jpeg',quality));
+  };
+  img.src=src;
+}
+
+function renderImgPreview(k,src){
+  const btn=document.getElementById('imgbtn_'+k);
+  const rem=document.getElementById('imgrem_'+k);
+  const prev=document.getElementById('imgprev_'+k);
+  if(btn)btn.className='img-btn has-img';
+  if(prev)prev.src=src;
+  if(rem)rem.style.display='inline-flex';
+}
+
+function removeImg(k){
+  if(!confirm('Remove attached photo?'))return;
+  if(state[k])delete state[k].img;
+  const btn=document.getElementById('imgbtn_'+k);
+  const rem=document.getElementById('imgrem_'+k);
+  const prev=document.getElementById('imgprev_'+k);
+  if(btn)btn.className='img-btn';
+  if(prev)prev.src='';
+  if(rem)rem.style.display='none';
+}
+
+function viewImg(k){
+  const src=state[k]?.img;if(!src)return;
+  const ov=document.createElement('div');
+  ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;cursor:pointer';
+  ov.innerHTML='<img src="'+src+'" style="max-width:90vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,.5)"/>';
+  ov.onclick=()=>document.body.removeChild(ov);
+  document.body.appendChild(ov);
+}
 function rfBtns(k){
   const r=state[k]?.rating;
   const el1=document.getElementById('b1_'+k);if(el1)el1.className=(r===1||r==='1')?'a1':'';
@@ -808,7 +876,7 @@ function editRecord(id){
   editingId=id;state=JSON.parse(JSON.stringify(rec.state));
   populateStoreDropdown();document.getElementById('storeName').value=rec.store||'';document.getElementById('auditPeriod').value=rec.period||'';
   renderForm();
-  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}}));
+  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}if(state[k]?.img)renderImgPreview(k,state[k].img);}));
   document.getElementById('editBanner').style.display='flex';document.getElementById('submitBtn').textContent='Update & Save →';
   showView('form');window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -930,18 +998,20 @@ function buildStoreHTMLBlob(rec,month){
     sec.items.forEach((item,idx)=>{
       const r=rec.state[sec.id+'_'+idx]?.rating;
       const obs=rec.state[sec.id+'_'+idx]?.obs||'';
+      const img=rec.state[sec.id+'_'+idx]?.img||'';
       const rd=r===null||r===undefined?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
       const rdBg=r===1?'#059669':r===0?'#dc2626':r===0.5?'#f59e0b':'#94a3b8';
       const rb=riskBg[item.risk]||'#f8fafc';
       const rc=riskColor[item.risk]||'#64748b';
       const rl=riskLabel[item.risk]||item.risk;
+      const imgHTML=img?`<br/><img src="${img}" style="max-width:180px;max-height:130px;border-radius:6px;border:1px solid #dde3ed;margin-top:5px"/>`:''
       detRows+=`<tr style="border-bottom:1px solid #f0f2f5">
         <td style="padding:8px 12px;text-align:center;font-size:11px;color:#94a3b8;width:32px">${idx+1}</td>
         <td style="padding:8px 12px;font-size:11.5px;line-height:1.6;max-width:340px">${esc(item.clause)}</td>
         <td style="padding:8px 12px;text-align:center;white-space:nowrap"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:${rb};color:${rc};border:1px solid ${rc}40">${rl}</span></td>
         <td style="padding:8px 12px;text-align:center;font-weight:600;color:#1e3a5f">${item.wt}</td>
         <td style="padding:8px 12px;text-align:center"><span style="display:inline-block;min-width:28px;height:28px;line-height:28px;border-radius:6px;background:${rdBg};color:#fff;font-weight:700;font-size:13px;text-align:center;padding:0 6px">${rd}</span></td>
-        <td style="padding:8px 12px;font-size:11px;color:#64748b;min-width:140px">${esc(obs)||'—'}</td>
+        <td style="padding:8px 12px;font-size:11px;color:#64748b;min-width:140px">${esc(obs)||'—'}${imgHTML}</td>
       </tr>`;
     });
   });
