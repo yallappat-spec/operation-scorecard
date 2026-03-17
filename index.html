@@ -342,10 +342,10 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <span class="filter-lbl">Or Quarter:</span>
     <select id="stblQuarter" onchange="document.getElementById('stblMonth').value='';renderScoreTable()">
       <option value="">All Quarters</option>
-      <option value="Q1">Q1 — Jan–Mar</option>
-      <option value="Q2">Q2 — Apr–Jun</option>
-      <option value="Q3">Q3 — Jul–Sep</option>
-      <option value="Q4">Q4 — Oct–Dec</option>
+      <option value="Q1">Q1 — Apr–Jun</option>
+      <option value="Q2">Q2 — Jul–Sep</option>
+      <option value="Q3">Q3 — Oct–Dec</option>
+      <option value="Q4">Q4 — Jan–Mar</option>
     </select>
     <span class="filter-lbl">Filter by Zone:</span>
     <select id="stblZone" onchange="renderScoreTable()">
@@ -390,10 +390,10 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <span class="filter-lbl">Or Quarter:</span>
     <select id="gapQuarter" onchange="document.getElementById('gapMonth').value='';renderGapAnalysis()">
       <option value="">All Quarters</option>
-      <option value="Q1">Q1 — Jan–Mar</option>
-      <option value="Q2">Q2 — Apr–Jun</option>
-      <option value="Q3">Q3 — Jul–Sep</option>
-      <option value="Q4">Q4 — Oct–Dec</option>
+      <option value="Q1">Q1 — Apr–Jun</option>
+      <option value="Q2">Q2 — Jul–Sep</option>
+      <option value="Q3">Q3 — Oct–Dec</option>
+      <option value="Q4">Q4 — Jan–Mar</option>
     </select>
     <span class="filter-lbl">Show:</span>
     <select id="gapFilter" onchange="renderGapAnalysis()">
@@ -434,10 +434,10 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       </select>
       <select class="ep-select" id="exportQuarter" style="display:none">
         <option value="">Select Quarter</option>
-        <option value="Q1">Q1 — Jan, Feb, Mar</option>
-        <option value="Q2">Q2 — Apr, May, Jun</option>
-        <option value="Q3">Q3 — Jul, Aug, Sep</option>
-        <option value="Q4">Q4 — Oct, Nov, Dec</option>
+        <option value="Q1">Q1 — Apr, May, Jun</option>
+        <option value="Q2">Q2 — Jul, Aug, Sep</option>
+        <option value="Q3">Q3 — Oct, Nov, Dec</option>
+        <option value="Q4">Q4 — Jan, Feb, Mar</option>
       </select>
       <button class="btn-exp btn-exp-pdf" onclick="exportAllPDF()">📄 Download Reports</button>
       <button class="btn-exp btn-exp-xl" onclick="exportAllExcel()">📊 Download CSV (Excel)</button>
@@ -872,7 +872,7 @@ function resetChecklist(){
 }
 function showLoad(t,s){document.getElementById('loadingTxt').textContent=t;document.getElementById('loadingSub').textContent=s||'Please wait…';document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoad(){document.getElementById('loadingOverlay').classList.remove('show');}
-const QUARTER_MONTHS={Q1:['January','February','March'],Q2:['April','May','June'],Q3:['July','August','September'],Q4:['October','November','December']};
+const QUARTER_MONTHS={Q1:['April','May','June'],Q2:['July','August','September'],Q3:['October','November','December'],Q4:['January','February','March']};
 function toggleExportSelectors(){
   const t=document.getElementById('exportType').value;
   document.getElementById('exportMonth').style.display=t==='month'?'':'none';
