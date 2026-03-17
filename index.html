@@ -223,6 +223,35 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 .btn-save{padding:10px 22px;background:var(--green);color:#fff;border:none;border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .btn-close{padding:10px 22px;background:#f0f4f8;color:var(--navy);border:1px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;font-weight:600;cursor:pointer}
 .saved-banner{background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:10px 16px;font-size:13px;color:#065f46;font-weight:600;text-align:center;margin-bottom:14px;display:none}
+.gap-wrap{max-width:1200px;margin:0 auto;padding:24px 16px 60px}
+.gap-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.gap-title{font-size:20px;font-weight:700;color:var(--navy)}
+.gap-filter{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px 18px;margin-bottom:18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gap-filter select{padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:var(--sans);font-size:13px;background:#fafbfc;outline:none;min-width:160px}
+.gap-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.gap-sum-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px 18px;cursor:pointer;transition:box-shadow .15s}
+.gap-sum-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.gap-sum-store{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gap-sum-pct{font-size:22px;font-weight:800;font-family:var(--mono)}
+.gap-sum-row{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+.gap-sum-badge{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600}
+.gap-dev{background:#fee2e2;color:#dc2626}.gap-par{background:#fef3c7;color:#d97706}
+.gap-store-block{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:16px;overflow:hidden}
+.gap-store-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(90deg,#f8fafd,#f1f5fa);border-bottom:1px solid var(--border);cursor:pointer;user-select:none}
+.gap-store-name{font-size:14px;font-weight:700;color:var(--navy)}
+.gap-store-meta{font-size:11.5px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+.gap-store-right{display:flex;align-items:center;gap:8px}
+.gap-tbl{width:100%;border-collapse:collapse;min-width:700px}
+.gap-tbl thead tr{background:#f7f9fc;border-bottom:1.5px solid var(--border)}
+.gap-tbl th{padding:9px 12px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);text-align:left;white-space:nowrap}
+.gap-tbl tbody tr{border-bottom:1px solid #f0f2f5}
+.gap-tbl tbody tr:last-child{border-bottom:none}
+.gap-tbl tbody tr:hover{background:#fafbff}
+.gap-tbl td{padding:10px 12px;font-size:12.5px;vertical-align:middle}
+.score-lost{font-family:var(--mono);font-weight:700;color:#dc2626}
+.score-part{font-family:var(--mono);font-weight:700;color:#d97706}
+.gap-empty{text-align:center;padding:40px;color:var(--muted);font-size:13px}
+.gap-section-label{background:#f0f4ff;padding:6px 12px;font-size:10.5px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.8px;border-bottom:1px solid var(--border)}
 @media(max-width:600px){.sp{flex-direction:column}.sub-btn{width:100%;text-align:center}.meta-grid{grid-template-columns:1fr 1fr}.modal{padding:22px 16px}.bs-num{font-size:48px}.eclause-row{grid-template-columns:1fr;gap:6px}.stbl-summary{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
@@ -240,6 +269,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <button class="btn-hdr btn-hdr-green" onclick="showView('scoreTable')">📊 Score Table</button>
     <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
+    <button class="btn-hdr" style="background:rgba(220,38,38,.25);border-color:rgba(220,38,38,.4);color:#fca5a5" onclick="showView('gapAnalysis')">📉 Gap Analysis</button>
     <button class="btn-hdr" style="background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#c7d2fe" onclick="openGsBackup()">☁️ Sheets Backup</button>
   </div>
 </div></div>
@@ -333,6 +363,38 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       </table>
     </div>
   </div>
+</div>
+</div>
+<div id="viewGapAnalysis" class="view">
+<div class="gap-wrap">
+  <div class="gap-top">
+    <div class="gap-title">📉 Gap Analysis — Deviation & Partial Scores</div>
+    <button class="btn-exp-green" onclick="exportGapCSV()">📥 Export to CSV</button>
+  </div>
+  <div class="gap-filter">
+    <span class="filter-lbl">Filter by Month:</span>
+    <select id="gapMonth" onchange="renderGapAnalysis()">
+      <option value="">All Months</option>
+      <option>January</option><option>February</option><option>March</option><option>April</option>
+      <option>May</option><option>June</option><option>July</option><option>August</option>
+      <option>September</option><option>October</option><option>November</option><option>December</option>
+    </select>
+    <span class="filter-lbl">Show:</span>
+    <select id="gapFilter" onchange="renderGapAnalysis()">
+      <option value="both">Deviations (0) + Partial (0.5)</option>
+      <option value="zero">Deviations only (0)</option>
+      <option value="half">Partial only (0.5)</option>
+    </select>
+    <span class="filter-lbl">Risk:</span>
+    <select id="gapRisk" onchange="renderGapAnalysis()">
+      <option value="">All Risk Levels</option>
+      <option value="H">🔴 High Risk Only</option>
+      <option value="M">🟡 Medium Risk Only</option>
+      <option value="L">🟢 Low Risk Only</option>
+    </select>
+  </div>
+  <div id="gapSummary" class="gap-summary"></div>
+  <div id="gapDetails"></div>
 </div>
 </div>
 <div id="viewRecords" class="view">
@@ -532,6 +594,7 @@ function showView(v){
   if(v==='editor'){renderEditor();renderStoreTags();}
   if(v==='form'){populateStoreDropdown();}
   if(v==='scoreTable'){renderScoreTable();}
+  if(v==='gapAnalysis'){renderGapAnalysis();}
 }
 function populateStoreDropdown(){
   const sel=document.getElementById('storeName');if(!sel||sel.tagName!=='SELECT')return;
@@ -921,6 +984,147 @@ function downloadSingleReport(id){
   document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ===== GAP ANALYSIS ===== */
+function getGapData(){
+  const month=document.getElementById('gapMonth')?.value||'';
+  const filterType=document.getElementById('gapFilter')?.value||'both';
+  const filterRisk=document.getElementById('gapRisk')?.value||'';
+  let recs=loadRecords();
+  if(month)recs=recs.filter(r=>r.period===month);
+  // Build per-store gap data
+  const storeMap={};
+  recs.forEach(rec=>{
+    const key=rec.store||'Unnamed';
+    if(!storeMap[key])storeMap[key]={store:key,period:rec.period,pct:rec.pct,totalLost:0,deviations:[],partials:[]};
+    const secs=rec.sections||SECTIONS;
+    secs.forEach(sec=>{
+      sec.items.forEach((item,idx)=>{
+        if(filterRisk&&item.risk!==filterRisk)return;
+        const k=sec.id+'_'+idx;
+        const st=rec.state&&rec.state[k];
+        if(!st)return;
+        const r=st.rating;
+        if(r===0||r==='0'){
+          storeMap[key].totalLost+=item.wt;
+          storeMap[key].deviations.push({section:sec.name,icon:sec.icon||'📋',clause:item.clause,risk:item.risk,wt:item.wt,lost:item.wt,rating:0,obs:st.obs||''});
+        } else if(r===0.5||r==='0.5'){
+          storeMap[key].totalLost+=item.wt*0.5;
+          storeMap[key].partials.push({section:sec.name,icon:sec.icon||'📋',clause:item.clause,risk:item.risk,wt:item.wt,lost:item.wt*0.5,rating:0.5,obs:st.obs||''});
+        }
+      });
+    });
+  });
+  // Filter by type
+  Object.values(storeMap).forEach(s=>{
+    if(filterType==='zero')s.issues=[...s.deviations];
+    else if(filterType==='half')s.issues=[...s.partials];
+    else s.issues=[...s.deviations,...s.partials];
+    // Group issues by section
+    const bySec={};
+    s.issues.forEach(issue=>{
+      if(!bySec[issue.section])bySec[issue.section]={name:issue.section,icon:issue.icon,items:[]};
+      bySec[issue.section].items.push(issue);
+    });
+    s.bySec=bySec;
+  });
+  return Object.values(storeMap).filter(s=>s.issues.length>0).sort((a,b)=>b.issues.length-a.issues.length);
+}
+
+function renderGapAnalysis(){
+  const data=getGapData();
+  const sumEl=document.getElementById('gapSummary');
+  const detEl=document.getElementById('gapDetails');
+  if(!data.length){
+    sumEl.innerHTML='';
+    detEl.innerHTML='<div class="gap-empty">📭 No deviations or partial scores found for the selected filters.</div>';
+    return;
+  }
+  // Summary cards
+  sumEl.innerHTML=data.map(s=>{
+    const devCount=s.deviations.length;const parCount=s.partials.length;
+    const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
+    return`<div class="gap-sum-card" onclick="scrollToStore('gap_${s.store.replace(/[^a-zA-Z0-9]/g,'_')}')">
+      <div class="gap-sum-store" title="${esc(s.store)}">${esc(s.store)}</div>
+      <div class="gap-sum-pct" style="color:${pc}">${s.pct}%</div>
+      <div class="gap-sum-row">
+        <span class="gap-sum-badge gap-dev">0: ${devCount}</span>
+        <span class="gap-sum-badge gap-par">0.5: ${parCount}</span>
+        <span style="color:var(--red);font-weight:700;font-size:11px">−${Math.round(s.totalLost*10)/10} pts</span>
+      </div>
+    </div>`;
+  }).join('');
+  // Detailed blocks
+  detEl.innerHTML=data.map(s=>{
+    const devCount=s.deviations.length;const parCount=s.partials.length;
+    const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
+    const id='gap_'+s.store.replace(/[^a-zA-Z0-9]/g,'_');
+    const riskLabel={H:'🔴 High',M:'🟡 Med',L:'🟢 Low'};
+    const riskCls={H:'rH',M:'rM',L:'rL'};
+    let rows='';
+    Object.values(s.bySec).forEach(sec=>{
+      rows+=`<tr><td colspan="6" class="gap-section-label">${sec.icon} ${esc(sec.name)}</td></tr>`;
+      sec.items.forEach((issue,i)=>{
+        const isZero=issue.rating===0;
+        const ratingBadge=isZero
+          ?'<span style="display:inline-block;padding:2px 10px;border-radius:6px;background:#fee2e2;color:#dc2626;font-weight:700;font-size:12px">0</span>'
+          :'<span style="display:inline-block;padding:2px 10px;border-radius:6px;background:#fef3c7;color:#d97706;font-weight:700;font-size:12px">0.5</span>';
+        rows+=`<tr>
+          <td class="td-sno">${i+1}</td>
+          <td style="line-height:1.5;max-width:340px;font-size:12.5px">${esc(issue.clause)}</td>
+          <td class="td-center"><span class="risk ${riskCls[issue.risk]||''}">${riskLabel[issue.risk]||issue.risk}</span></td>
+          <td class="td-center" style="font-family:var(--mono);font-size:12px">${issue.wt}</td>
+          <td class="td-center">${ratingBadge}</td>
+          <td class="${isZero?'score-lost':'score-part'}" style="text-align:center">−${issue.lost}</td>
+          <td style="font-size:11.5px;color:var(--muted);min-width:140px">${esc(issue.obs)||'—'}</td>
+        </tr>`;
+      });
+    });
+    return`<div class="gap-store-block" id="${id}">
+      <div class="gap-store-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
+        <div>
+          <div class="gap-store-name">${esc(s.store)}</div>
+          <div class="gap-store-meta">${s.period||'All months'} · Score: <span style="color:${pc};font-weight:700">${s.pct}%</span> · Issues: ${s.issues.length} · Points Lost: ${Math.round(s.totalLost*10)/10}</div>
+        </div>
+        <div class="gap-store-right">
+          <span class="gap-sum-badge gap-dev">0 Deviation: ${devCount}</span>
+          <span class="gap-sum-badge gap-par">0.5 Partial: ${parCount}</span>
+          <span style="font-size:11px;color:var(--muted)">▼</span>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="gap-tbl">
+          <thead><tr>
+            <th style="width:32px">#</th><th>Audit Clause</th><th style="text-align:center">Risk</th>
+            <th style="text-align:center">Wt.Max</th><th style="text-align:center">Rating</th>
+            <th style="text-align:center">Points Lost</th><th>Observation</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function scrollToStore(id){
+  const el=document.getElementById(id);
+  if(el){el.scrollIntoView({behavior:'smooth',block:'start'});el.querySelector('.gap-store-hdr').nextElementSibling.style.display='block';}
+}
+
+function exportGapCSV(){
+  const data=getGapData();
+  if(!data.length){alert('No gap data to export.');return;}
+  let csv='Store,Period,Score%,Section,Audit Clause,Risk,Wt.Max,Rating,Points Lost,Observation\n';
+  data.forEach(s=>{
+    s.issues.forEach(issue=>{
+      csv+='"'+esc2(s.store)+'","'+esc2(s.period||'')+'",'+s.pct+'%,"'+esc2(issue.section)+'","'+esc2(issue.clause)+'","'+({H:'High',M:'Medium',L:'Low'}[issue.risk]||issue.risk)+'",'+issue.wt+','+issue.rating+','+issue.lost+',"'+esc2(issue.obs)+'"\n';
+    });
+  });
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='GapAnalysis_'+(document.getElementById('gapMonth')?.value||'All')+'.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+}
+function esc2(s){return String(s||'').replace(/"/g,'""');}
 
 /* ===== GOOGLE SHEETS BACKUP ===== */
 const GS_DEFAULT_URL='https://script.google.com/macros/s/AKfycbxnw8Pu5xBkHMD5dj3lGXaUWCnmA-1gSH74zOJeFA9rmlvG6cY7lelZZt_LvOLcBpU3/exec';
