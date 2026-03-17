@@ -240,6 +240,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <button class="btn-hdr btn-hdr-green" onclick="showView('scoreTable')">📊 Score Table</button>
     <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
+    <button class="btn-hdr" style="background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#c7d2fe" onclick="openGsBackup()">☁️ Sheets Backup</button>
   </div>
 </div></div>
 <div id="viewForm" class="view active">
@@ -920,7 +921,116 @@ function downloadSingleReport(id){
   document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* ===== GOOGLE SHEETS BACKUP ===== */
+const GS_DEFAULT_URL='https://script.google.com/macros/s/AKfycbxnw8Pu5xBkHMD5dj3lGXaUWCnmA-1gSH74zOJeFA9rmlvG6cY7lelZZt_LvOLcBpU3/exec';
+function getGsUrl(){return localStorage.getItem('ahm_gs_url')||GS_DEFAULT_URL;}
+function openGsBackup(){
+  document.getElementById('gsModal').style.display='flex';
+  document.getElementById('gsUrl').value=getGsUrl();
+  document.getElementById('gsStatus').textContent='';
+}
+function closeGsModal(){document.getElementById('gsModal').style.display='none';}
+function saveGsUrl(){
+  const url=document.getElementById('gsUrl').value.trim();
+  if(!url){alert('Please enter the Apps Script URL.');return;}
+  localStorage.setItem('ahm_gs_url',url);
+  document.getElementById('gsStatus').textContent='URL saved!';
+}
+async function runGsBackup(){
+  const url=getGsUrl();
+  if(!url){alert('Apps Script URL not configured.');return;}
+  const recs=loadRecords();
+  const stores=loadStores();
+  if(!recs.length){alert('No records to backup.');return;}
+  const btn=document.getElementById('gsBkpBtn');
+  const status=document.getElementById('gsStatus');
+  btn.disabled=true;btn.textContent='Sending…';status.textContent='';
+  const payload=JSON.stringify({records:recs,stores:stores,backedUpAt:new Date().toISOString()});
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
+    status.style.color='#059669';
+    status.textContent='✅ Backup sent successfully! Check your Google Sheet.';
+    localStorage.setItem('ahm_gs_last_backup',new Date().toLocaleString());
+  }catch(e){
+    status.style.color='#dc2626';
+    status.textContent='❌ Error: '+e.message;
+  }
+  btn.disabled=false;btn.textContent='☁️ Send Backup Now';
+}
+
 loadSections();state=freshState();populateStoreDropdown();renderForm();
 </script>
+
+<!-- Google Sheets Backup Modal -->
+<div id="gsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:28px 28px 24px;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#0f1f3d">☁️ Google Sheets Backup</div>
+        <div style="font-size:12px;color:#64748b;margin-top:3px">Send all records to your Google Sheet</div>
+      </div>
+      <button onclick="closeGsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;line-height:1">✕</button>
+    </div>
+
+    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:13px 15px;margin-bottom:18px;font-size:12.5px;color:#1e40af;line-height:1.6">
+      <strong>Setup (one-time):</strong><br>
+      1. Open your Google Sheet → Extensions → Apps Script<br>
+      2. Paste the Apps Script code (see instructions below)<br>
+      3. Deploy as Web App → Execute as <em>Me</em> → Anyone can access<br>
+      4. Copy the Web App URL and paste it below
+    </div>
+
+    <label style="display:block;font-size:11px;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">Apps Script Web App URL</label>
+    <input id="gsUrl" type="url" placeholder="https://script.google.com/macros/s/.../exec"
+      style="width:100%;padding:9px 12px;border:1.5px solid #dde3ed;border-radius:8px;font-size:13px;outline:none;margin-bottom:10px"/>
+
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button onclick="saveGsUrl()" style="padding:8px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">Save URL</button>
+      <button id="gsBkpBtn" onclick="runGsBackup()" style="padding:8px 20px;background:#059669;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer">☁️ Send Backup Now</button>
+    </div>
+
+    <div id="gsStatus" style="font-size:13px;min-height:20px"></div>
+
+    <details style="margin-top:14px">
+      <summary style="font-size:12px;color:#1d4ed8;cursor:pointer;font-weight:600">📋 Apps Script Code (click to expand)</summary>
+      <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    writeRecords(ss, data.records || []);
+    writeStores(ss, data.stores || []);
+    writeLog(ss, data.backedUpAt);
+  } catch(err) {
+    Logger.log(err);
+  }
+}
+
+function writeRecords(ss, records) {
+  var sheet = ss.getSheetByName('Records') || ss.insertSheet('Records');
+  sheet.clearContents();
+  sheet.appendRow(['#','Store','Period','Score Obtained','Max Score','Percentage','Zone','Saved At']);
+  records.forEach(function(r, i) {
+    var zone = r.pct >= 90 ? 'Green' : r.pct >= 80 ? 'Yellow' : 'Red';
+    sheet.appendRow([i+1, r.store, r.period, r.tO, r.tM, r.pct+'%', zone, r.savedAt]);
+  });
+}
+
+function writeStores(ss, stores) {
+  var sheet = ss.getSheetByName('Stores') || ss.insertSheet('Stores');
+  sheet.clearContents();
+  sheet.appendRow(['Store Name']);
+  stores.forEach(function(s) { sheet.appendRow([s]); });
+}
+
+function writeLog(ss, ts) {
+  var sheet = ss.getSheetByName('BackupLog') || ss.insertSheet('BackupLog');
+  sheet.appendRow([new Date(), ts, 'Backup completed']);
+}</pre>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('gsCode').textContent).then(()=>alert('Copied!'))"
+        style="margin-top:8px;padding:6px 14px;background:#1d4ed8;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer">📋 Copy Code</button>
+    </details>
+  </div>
+</div>
 </body>
 </html>
