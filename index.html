@@ -273,6 +273,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
     <button class="btn-hdr" style="background:rgba(220,38,38,.25);border-color:rgba(220,38,38,.4);color:#fca5a5" onclick="showView('gapAnalysis')">📉 Gap Analysis</button>
+    <button class="btn-hdr" style="background:rgba(16,185,129,.25);border-color:rgba(16,185,129,.4);color:#6ee7b7" onclick="openSyncModal()">🔄 Sync Data</button>
     <button class="btn-hdr" style="background:rgba(99,102,241,.25);border-color:rgba(99,102,241,.4);color:#c7d2fe" onclick="openGsBackup()">☁️ Sheets Backup</button>
   </div>
 </div></div>
@@ -1189,6 +1190,62 @@ function exportGapCSV(){
 }
 function esc2(s){return String(s||'').replace(/"/g,'""');}
 
+/* ===== SYNC DATA (EXPORT / IMPORT) ===== */
+function openSyncModal(){
+  document.getElementById('syncModal').style.display='flex';
+  document.getElementById('syncStatus').textContent='';
+  const recs=loadRecords();const stores=loadStores();
+  document.getElementById('syncInfo').textContent=recs.length+' audit records · '+stores.length+' stores';
+}
+function closeSyncModal(){document.getElementById('syncModal').style.display='none';}
+
+function exportAllData(){
+  const payload={records:loadRecords(),stores:loadStores(),checklist:JSON.parse(localStorage.getItem('ahm_checklist')||'null'),exportedAt:new Date().toISOString(),version:'v1'};
+  const json=JSON.stringify(payload,null,2);
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));
+  a.download='OpScorecard_Backup_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+  document.getElementById('syncStatus').style.color='#059669';
+  document.getElementById('syncStatus').textContent='✅ Data exported! Share this file with the other system.';
+}
+
+function importAllData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!data.records&&!data.stores){throw new Error('Invalid backup file.');}
+      const existing=loadRecords();
+      const incoming=data.records||[];
+      // Merge: incoming records win if same id, new records added
+      const merged=[...existing];
+      incoming.forEach(rec=>{
+        const idx=merged.findIndex(r=>r.id===rec.id);
+        if(idx>=0)merged[idx]=rec;else merged.push(rec);
+      });
+      merged.sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+      saveRecordsLS(merged);
+      if(data.stores&&data.stores.length){
+        const mergedStores=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
+        saveStores(mergedStores);
+      }
+      if(data.checklist){localStorage.setItem('ahm_checklist',JSON.stringify(data.checklist));}
+      const added=incoming.filter(r=>!existing.find(x=>x.id===r.id)).length;
+      const updated=incoming.filter(r=>existing.find(x=>x.id===r.id)).length;
+      document.getElementById('syncStatus').style.color='#059669';
+      document.getElementById('syncStatus').textContent='✅ Import done! '+added+' new records added, '+updated+' updated. Reload the page to see all data.';
+      document.getElementById('syncInfo').textContent=merged.length+' total records now';
+    }catch(err){
+      document.getElementById('syncStatus').style.color='#dc2626';
+      document.getElementById('syncStatus').textContent='❌ Error: '+err.message;
+    }
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+
 /* ===== GOOGLE SHEETS BACKUP ===== */
 const GS_DEFAULT_URL='https://script.google.com/macros/s/AKfycbxnw8Pu5xBkHMD5dj3lGXaUWCnmA-1gSH74zOJeFA9rmlvG6cY7lelZZt_LvOLcBpU3/exec';
 function getGsUrl(){return localStorage.getItem('ahm_gs_url')||GS_DEFAULT_URL;}
@@ -1228,6 +1285,39 @@ async function runGsBackup(){
 
 loadSections();state=freshState();populateStoreDropdown();renderForm();
 </script>
+
+<!-- Sync Data Modal -->
+<div id="syncModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:28px 28px 24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:17px;font-weight:700;color:#0f1f3d">🔄 Sync Data Across Systems</div>
+        <div style="font-size:12px;color:#64748b;margin-top:3px">Export from this system · Import on another</div>
+      </div>
+      <button onclick="closeSyncModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b">✕</button>
+    </div>
+
+    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:13px 15px;margin-bottom:20px;font-size:12.5px;color:#065f46;line-height:1.7">
+      <strong>How to sync:</strong><br>
+      1. On <strong>System A</strong> → click <strong>Export All Data</strong> → save the .json file<br>
+      2. Transfer the file (WhatsApp, email, USB, Google Drive…)<br>
+      3. On <strong>System B</strong> → click <strong>Import Data</strong> → select the file<br>
+      4. Records from both systems are <strong>merged automatically</strong>
+    </div>
+
+    <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:14px;font-family:var(--mono)"></div>
+
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="exportAllData()" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">📤 Export All Data</button>
+      <label style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer;text-align:center">
+        📥 Import Data
+        <input type="file" accept=".json" style="display:none" onchange="importAllData(this)"/>
+      </label>
+    </div>
+
+    <div id="syncStatus" style="font-size:13px;min-height:20px;line-height:1.5"></div>
+  </div>
+</div>
 
 <!-- Google Sheets Backup Modal -->
 <div id="gsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;align-items:center;justify-content:center;padding:16px">
