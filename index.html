@@ -1362,9 +1362,9 @@ function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    saveRawRecords(ss, data.records || []);
-    writeStores(ss, data.stores || []);
-    writeSummary(ss, data.records || []);
+    mergeAndSaveRecords(ss, data.records || []);
+    mergeAndSaveStores(ss, data.stores || []);
+    writeSummary(ss, getRawRecords(ss));
     writeLog(ss, data.backedUpAt);
   } catch(err) { Logger.log(err); }
 }
@@ -1383,6 +1383,24 @@ function doGet(e) {
       .createTextOutput(JSON.stringify({error: err.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
   }
+}
+
+// Merge incoming records with existing ones in Sheet (no overwrite)
+function mergeAndSaveRecords(ss, incoming) {
+  var existing = getRawRecords(ss);
+  var map = {};
+  existing.forEach(function(r) { map[r.id] = r; });
+  incoming.forEach(function(r) { map[r.id] = r; }); // incoming wins for same id
+  var merged = Object.keys(map).map(function(k){ return map[k]; });
+  merged.sort(function(a,b){ return new Date(b.savedAt) - new Date(a.savedAt); });
+  saveRawRecords(ss, merged);
+}
+
+// Merge stores (union of both)
+function mergeAndSaveStores(ss, incoming) {
+  var existing = getStores(ss);
+  var merged = existing.concat(incoming).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort();
+  writeStores(ss, merged);
 }
 
 function saveRawRecords(ss, records) {
