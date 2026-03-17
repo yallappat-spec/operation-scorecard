@@ -339,6 +339,14 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       <option>May</option><option>June</option><option>July</option><option>August</option>
       <option>September</option><option>October</option><option>November</option><option>December</option>
     </select>
+    <span class="filter-lbl">Or Quarter:</span>
+    <select id="stblQuarter" onchange="document.getElementById('stblMonth').value='';renderScoreTable()">
+      <option value="">All Quarters</option>
+      <option value="Q1">Q1 — Jan–Mar</option>
+      <option value="Q2">Q2 — Apr–Jun</option>
+      <option value="Q3">Q3 — Jul–Sep</option>
+      <option value="Q4">Q4 — Oct–Dec</option>
+    </select>
     <span class="filter-lbl">Filter by Zone:</span>
     <select id="stblZone" onchange="renderScoreTable()">
       <option value="">All Zones</option>
@@ -373,11 +381,19 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
   <div class="gap-filter">
     <span class="filter-lbl">Filter by Month:</span>
-    <select id="gapMonth" onchange="renderGapAnalysis()">
+    <select id="gapMonth" onchange="document.getElementById('gapQuarter').value='';renderGapAnalysis()">
       <option value="">All Months</option>
       <option>January</option><option>February</option><option>March</option><option>April</option>
       <option>May</option><option>June</option><option>July</option><option>August</option>
       <option>September</option><option>October</option><option>November</option><option>December</option>
+    </select>
+    <span class="filter-lbl">Or Quarter:</span>
+    <select id="gapQuarter" onchange="document.getElementById('gapMonth').value='';renderGapAnalysis()">
+      <option value="">All Quarters</option>
+      <option value="Q1">Q1 — Jan–Mar</option>
+      <option value="Q2">Q2 — Apr–Jun</option>
+      <option value="Q3">Q3 — Jul–Sep</option>
+      <option value="Q4">Q4 — Oct–Dec</option>
     </select>
     <span class="filter-lbl">Show:</span>
     <select id="gapFilter" onchange="renderGapAnalysis()">
@@ -405,17 +421,28 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
   <div class="export-panel">
     <div class="ep-row">
-      <span class="ep-label">📤 Export Month Report:</span>
+      <span class="ep-label">📤 Export Report:</span>
+      <select class="ep-select" id="exportType" onchange="toggleExportSelectors()">
+        <option value="month">By Month</option>
+        <option value="quarter">By Quarter</option>
+      </select>
       <select class="ep-select" id="exportMonth">
         <option value="">Select Month</option>
         <option>January</option><option>February</option><option>March</option><option>April</option>
         <option>May</option><option>June</option><option>July</option><option>August</option>
         <option>September</option><option>October</option><option>November</option><option>December</option>
       </select>
+      <select class="ep-select" id="exportQuarter" style="display:none">
+        <option value="">Select Quarter</option>
+        <option value="Q1">Q1 — Jan, Feb, Mar</option>
+        <option value="Q2">Q2 — Apr, May, Jun</option>
+        <option value="Q3">Q3 — Jul, Aug, Sep</option>
+        <option value="Q4">Q4 — Oct, Nov, Dec</option>
+      </select>
       <button class="btn-exp btn-exp-pdf" onclick="exportAllPDF()">📄 Download Reports</button>
       <button class="btn-exp btn-exp-xl" onclick="exportAllExcel()">📊 Download CSV (Excel)</button>
     </div>
-    <div class="ep-hint">Select a month → Download Reports saves one HTML report per store · Download CSV saves all stores in one file.</div>
+    <div class="ep-hint">Select month or quarter → Download Reports saves one HTML per store · Download CSV saves all stores in one file.</div>
   </div>
   <div class="filter-bar">
     <div class="search-wrap"><span class="search-icon">🔍</span><input id="searchInput" placeholder="Search store name…" oninput="renderRecords()"/></div>
@@ -708,10 +735,12 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 function renderScoreTable(){
   const recs=loadRecords();
   const fm=document.getElementById('stblMonth')?.value||'';
+  const fq=document.getElementById('stblQuarter')?.value||'';
   const fz=document.getElementById('stblZone')?.value||'';
   const fs=(document.getElementById('stblSearch')?.value||'').toLowerCase();
   let filtered=[...recs];
-  if(fm)filtered=filtered.filter(r=>r.period===fm);
+  if(fq){const qm=QUARTER_MONTHS[fq]||[];filtered=filtered.filter(r=>qm.includes(r.period));}
+  else if(fm)filtered=filtered.filter(r=>r.period===fm);
   if(fz==='green')filtered=filtered.filter(r=>r.pct>=90);
   else if(fz==='yellow')filtered=filtered.filter(r=>r.pct>=80&&r.pct<90);
   else if(fz==='red')filtered=filtered.filter(r=>r.pct<80);
@@ -843,6 +872,35 @@ function resetChecklist(){
 }
 function showLoad(t,s){document.getElementById('loadingTxt').textContent=t;document.getElementById('loadingSub').textContent=s||'Please wait…';document.getElementById('loadingOverlay').classList.add('show');}
 function hideLoad(){document.getElementById('loadingOverlay').classList.remove('show');}
+const QUARTER_MONTHS={Q1:['January','February','March'],Q2:['April','May','June'],Q3:['July','August','September'],Q4:['October','November','December']};
+function toggleExportSelectors(){
+  const t=document.getElementById('exportType').value;
+  document.getElementById('exportMonth').style.display=t==='month'?'':'none';
+  document.getElementById('exportQuarter').style.display=t==='quarter'?'':'none';
+}
+function getExportLabel(){
+  const t=document.getElementById('exportType').value;
+  if(t==='quarter'){const q=document.getElementById('exportQuarter').value;return q||null;}
+  return document.getElementById('exportMonth').value||null;
+}
+function getExportRecs(){
+  const t=document.getElementById('exportType').value;
+  const all=loadRecords();
+  if(t==='quarter'){
+    const q=document.getElementById('exportQuarter').value;
+    if(!q){alert('Please select a quarter.');return null;}
+    const months=QUARTER_MONTHS[q];
+    const r=all.filter(x=>months.includes(x.period));
+    if(!r.length){alert('No records for '+q+'.');return null;}
+    return r;
+  } else {
+    const m=document.getElementById('exportMonth').value;
+    if(!m){alert('Please select a month.');return null;}
+    const r=all.filter(x=>x.period===m);
+    if(!r.length){alert('No records for '+m+'.');return null;}
+    return r;
+  }
+}
 function getSelMonth(){const m=document.getElementById('exportMonth').value;if(!m){alert('Please select a month.');return null;}return m;}
 function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.length){alert('No records for '+m+'.');return null;}return r;}
 
@@ -959,22 +1017,22 @@ table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e
 }
 
 function exportAllPDF(){
-  const month=getSelMonth();if(!month)return;
-  const recs=getMonthRecs(month);if(!recs)return;
-  showLoad('Preparing '+recs.length+' report(s)…','Downloading for '+month);
+  const recs=getExportRecs();if(!recs)return;
+  const label=getExportLabel();
+  showLoad('Preparing '+recs.length+' report(s)…','Downloading for '+label);
   setTimeout(()=>{
-    try{recs.forEach(rec=>{const html=buildStoreHTMLBlob(rec,month);const blob=new Blob([html],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='OpScorecard_'+month+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);});hideLoad();}
+    try{recs.forEach(rec=>{const html=buildStoreHTMLBlob(rec,rec.period||label);const blob=new Blob([html],{type:'text/html;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='OpScorecard_'+label+'_'+(rec.store||'Store').replace(/[^a-zA-Z0-9]/g,'_')+'.html';document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},1000);});hideLoad();}
     catch(e){hideLoad();alert('Error: '+e.message);}
   },200);
 }
 function exportAllExcel(){
-  const month=document.getElementById('exportMonth').value;if(!month){alert('Please select a month.');return;}
-  const recs=loadRecords().filter(r=>r.period===month);if(!recs.length){alert('No records for '+month+'.');return;}
+  const recs=getExportRecs();if(!recs)return;
+  const label=getExportLabel();
   let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
   recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
   csv+='\n\nDetailed Responses\nStore,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
   recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='OpScorecard_'+month+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='OpScorecard_'+label+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function downloadSingleReport(id){
   const rec=loadRecords().find(r=>r.id===id);if(!rec)return;
@@ -988,10 +1046,12 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 /* ===== GAP ANALYSIS ===== */
 function getGapData(){
   const month=document.getElementById('gapMonth')?.value||'';
+  const quarter=document.getElementById('gapQuarter')?.value||'';
   const filterType=document.getElementById('gapFilter')?.value||'both';
   const filterRisk=document.getElementById('gapRisk')?.value||'';
   let recs=loadRecords();
-  if(month)recs=recs.filter(r=>r.period===month);
+  if(quarter){const qm=QUARTER_MONTHS[quarter]||[];recs=recs.filter(r=>qm.includes(r.period));}
+  else if(month)recs=recs.filter(r=>r.period===month);
   // Build per-store gap data
   const storeMap={};
   recs.forEach(rec=>{
