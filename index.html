@@ -939,7 +939,9 @@ function updCedStats(){
 function saveChecklist(){
   let empty=false;SECTIONS.forEach(sec=>sec.items.forEach(item=>{if(!item.clause.trim())empty=true;}));
   if(empty){alert('Please fill in all clause text.');return;}if(!SECTIONS.length){alert('Need at least one section.');return;}
-  persistSections();state=freshState();const f=document.getElementById('cedFlash');f.style.display='block';setTimeout(()=>f.style.display='none',2500);
+  persistSections();state=freshState();
+  const f=document.getElementById('cedFlash');f.style.display='block';f.textContent='✅ Checklist saved! Syncing to Sheets…';
+  pushToSheets(true).then(()=>{f.textContent='✅ Checklist saved & synced to Sheets!';setTimeout(()=>{f.style.display='none';f.textContent='✅ Checklist saved!';},3000);});
 }
 function resetChecklist(){
   if(!confirm('Reset to default?'))return;localStorage.removeItem('ahm_checklist');loadSections();renderEditor();state=freshState();
