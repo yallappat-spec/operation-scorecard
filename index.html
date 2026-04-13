@@ -336,6 +336,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
     <div class="stbl-title">📊 Score Summary Table</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
       <button class="btn-exp-green" onclick="exportScoreCSV()">📥 Export to Excel (CSV)</button>
+      <button class="btn-new-audit" style="background:linear-gradient(135deg,#d97706,#92400e)" onclick="recalculateAllScores()">🔄 Recalculate All Scores</button>
       <button class="btn-new-audit" onclick="newAudit()">+ New Audit</button>
     </div>
   </div>
@@ -839,6 +840,40 @@ function renderScoreTable(){
       <td style="text-align:center"><span class="zone-badge ${zc}">${short}</span></td></tr>`;
   }).join('');
 }
+function recalculateAllScores(){
+  const recs=loadRecords();
+  if(!recs.length){alert('No records to recalculate.');return;}
+  if(!confirm('This will recalculate ALL '+recs.length+' saved records using the CURRENT checklist weights.\n\nProceed?'))return;
+  let updated=0;
+  recs.forEach(rec=>{
+    let tO=0,tM=0;
+    const ss=[];
+    SECTIONS.forEach(sec=>{
+      let sO=0,sM=0;
+      sec.items.forEach((item,idx)=>{
+        const r=rec.state[sec.id+'_'+idx]?.rating;
+        if(r==='na'||r===null||r===undefined)return;
+        sM+=item.wt;
+        const rn=parseFloat(r);
+        if(rn===1)sO+=item.wt;
+        else if(rn===0.5)sO+=item.wt*0.5;
+      });
+      tO+=sO;tM+=sM;
+      ss.push({name:sec.name,icon:sec.icon||'📋',obt:Math.round(sO*10)/10,max:sM});
+    });
+    rec.tO=Math.round(tO*10)/10;
+    rec.tM=tM;
+    rec.pct=tM>0?Math.round(tO/tM*100):0;
+    rec.ss=ss;
+    rec.sections=JSON.parse(JSON.stringify(SECTIONS));
+    updated++;
+  });
+  saveRecordsLS(recs);
+  pushToSheets(true);
+  renderScoreTable();
+  alert('✅ '+updated+' records recalculated using current checklist weights!');
+}
+
 function exportScoreCSV(){
   const recs=loadRecords();if(!recs.length){alert('No records.');return;}
   let csv='#,Store Name,Month,Score Obtained,Max Score,Score %,Zone\n';
