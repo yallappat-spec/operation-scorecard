@@ -871,7 +871,9 @@ function recalculateAllScores(){
   saveRecordsLS(recs);
   pushToSheets(true);
   renderScoreTable();
-  alert('✅ '+updated+' records recalculated using current checklist weights!');
+  renderRecords();
+  if(typeof renderGapAnalysis==='function')renderGapAnalysis();
+  alert('✅ '+updated+' records recalculated!\n\n• Score Table updated\n• Records updated\n• Downloaded PDFs will show new scores\n• Gap Analysis updated\n• Synced to Google Sheets');
 }
 
 function exportScoreCSV(){
