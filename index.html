@@ -1336,9 +1336,17 @@ function mergeIncoming(data){
     saveStores(ms);
   }
   if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
-    localStorage.setItem('ahm_checklist',JSON.stringify(data.checklist));
-    SECTIONS=JSON.parse(JSON.stringify(data.checklist));
-    SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
+    const current=localStorage.getItem('ahm_checklist');
+    const incoming=JSON.stringify(data.checklist);
+    if(current!==incoming){
+      localStorage.setItem('ahm_checklist',incoming);
+      SECTIONS=JSON.parse(JSON.stringify(data.checklist));
+      SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
+      state=freshState();
+      renderForm();
+      populateStoreDropdown();
+      showSyncToast('Checklist updated from Sheets');
+    }
   }
 }
 
@@ -1401,8 +1409,8 @@ async function runGsBackup(){
 }
 
 loadSections();state=freshState();populateStoreDropdown();renderForm();
-// Auto-sync: pull on page load + every 5 minutes silently
-setTimeout(()=>pullFromSheets(true),3000);
+// Auto-sync: pull on page load (1s delay) + every 5 minutes silently
+setTimeout(()=>pullFromSheets(true),1000);
 setInterval(()=>pullFromSheets(true),5*60*1000);
 </script>
 
