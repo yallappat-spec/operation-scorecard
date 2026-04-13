@@ -610,9 +610,10 @@ const DEFAULT_SECTIONS=[
 ];
 let SECTIONS=[];
 function loadSections(){
-  try{const ver=localStorage.getItem('ahm_checklist_ver');if(ver!=='v2'){localStorage.removeItem('ahm_checklist');localStorage.setItem('ahm_checklist_ver','v2');}
-  const s=localStorage.getItem('ahm_checklist');SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
-  catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
+  try{
+    const s=localStorage.getItem('ahm_checklist');
+    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
+  }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
 }
 function persistSections(){localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));}
@@ -1273,7 +1274,8 @@ function closeSyncModal(){document.getElementById('syncModal').style.display='no
 
 async function pushToSheets(silent){
   const url=getGsUrl();if(!url)return;
-  const payload=JSON.stringify({records:loadRecords(),stores:loadStores(),backedUpAt:new Date().toISOString()});
+  const checklist=localStorage.getItem('ahm_checklist');
+  const payload=JSON.stringify({records:loadRecords(),stores:loadStores(),checklist:checklist?JSON.parse(checklist):null,backedUpAt:new Date().toISOString()});
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
     localStorage.setItem('ahm_last_sync',new Date().toLocaleString());
@@ -1330,6 +1332,11 @@ function mergeIncoming(data){
   if(data.stores&&data.stores.length){
     const ms=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
     saveStores(ms);
+  }
+  if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
+    localStorage.setItem('ahm_checklist',JSON.stringify(data.checklist));
+    SECTIONS=JSON.parse(JSON.stringify(data.checklist));
+    SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
   }
 }
 
