@@ -1334,22 +1334,15 @@ async function pullFromSheets(silent){
     const res=await fetch(url+'?action=read',{method:'GET',redirect:'follow'});
     const data=await res.json();
     if(!data.records){throw new Error('No records in response.');}
-    const before=loadRecords().length;
-    mergeIncoming(data);
-    const after=loadRecords().length;
-    const added=after-before;
+    const result=mergeIncoming(data);
     const last=new Date().toLocaleString();
     localStorage.setItem('ahm_last_sync',last);
     if(!silent){
       document.getElementById('syncStatus').style.color='#059669';
       document.getElementById('syncStatus').textContent='✅ Pulled '+data.records.length+' records. Page will reload…';
-      document.getElementById('syncInfo').textContent=after+' records now · Last sync: '+last;
+      document.getElementById('syncInfo').textContent=loadRecords().length+' records now · Last sync: '+last;
       setTimeout(()=>location.reload(),1800);
     } else {
-      if(added>0){
-        showSyncToast(added+' new record'+(added>1?'s':'')+' synced from Sheets');
-        refreshCurrentView();
-      }
       updateSyncBadge(last);
     }
   }catch(e){
@@ -1365,7 +1358,13 @@ function mergeIncoming(data){
   const existing=loadRecords();
   const incoming=data.records||[];
   const merged=[...existing];
-  incoming.forEach(rec=>{const idx=merged.findIndex(r=>r.id===rec.id);if(idx>=0)merged[idx]=rec;else merged.push(rec);});
+  let added=0,updated=0;
+  incoming.forEach(rec=>{
+    const idx=merged.findIndex(r=>r.id===rec.id);
+    if(idx>=0){
+      if(JSON.stringify(merged[idx])!==JSON.stringify(rec)){merged[idx]=rec;updated++;}
+    }else{merged.push(rec);added++;}
+  });
   merged.sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
   saveRecordsLS(merged);
   if(data.stores&&data.stores.length){
@@ -1373,18 +1372,22 @@ function mergeIncoming(data){
     saveStores(ms);
   }
   if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
-    const current=localStorage.getItem('ahm_checklist');
-    const incoming=JSON.stringify(data.checklist);
-    if(current!==incoming){
-      localStorage.setItem('ahm_checklist',incoming);
+    const currentCl=localStorage.getItem('ahm_checklist');
+    const incomingCl=JSON.stringify(data.checklist);
+    if(currentCl!==incomingCl){
+      localStorage.setItem('ahm_checklist',incomingCl);
       SECTIONS=JSON.parse(JSON.stringify(data.checklist));
       SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
-      state=freshState();
-      renderForm();
-      populateStoreDropdown();
+      state=freshState();renderForm();populateStoreDropdown();
       showSyncToast('Checklist updated from Sheets');
     }
   }
+  if(added>0||updated>0){
+    const msg=(added>0?added+' new':'')+(added>0&&updated>0?', ':'')+( updated>0?updated+' updated':'')+' record'+(added+updated>1?'s':'')+' synced';
+    showSyncToast(msg);
+    refreshCurrentView();
+  }
+  return{added,updated};
 }
 
 function refreshCurrentView(){
