@@ -1311,6 +1311,30 @@ function openSyncModal(){
 }
 function closeSyncModal(){document.getElementById('syncModal').style.display='none';}
 
+async function forcePushAll(){
+  const recs=loadRecords();
+  if(!recs.length){alert('No records to push.');return;}
+  const btn=event.target;btn.disabled=true;btn.textContent='Pushing…';
+  document.getElementById('syncStatus').textContent='';
+  const url=getGsUrl();
+  const payload=JSON.stringify({
+    records:recs,stores:loadStores(),
+    checklist:localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null,
+    backedUpAt:new Date().toISOString(),forceOverwrite:false
+  });
+  try{
+    await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
+    localStorage.setItem('ahm_last_sync',new Date().toLocaleString());
+    document.getElementById('syncStatus').style.color='#059669';
+    document.getElementById('syncStatus').textContent='✅ All '+recs.length+' records pushed! Other systems will see them within 30 seconds.';
+    document.getElementById('syncInfo').textContent=recs.length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+  }catch(e){
+    document.getElementById('syncStatus').style.color='#dc2626';
+    document.getElementById('syncStatus').textContent='❌ Push failed: '+e.message;
+  }
+  btn.disabled=false;btn.textContent='⬆️ Push ALL to Sheets';
+}
+
 async function pushToSheets(silent,includeChecklist){
   const url=getGsUrl();if(!url)return;
   const payload=JSON.stringify({
@@ -1478,14 +1502,11 @@ setInterval(()=>pullFromSheets(true),30*1000);
 
     <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:16px;font-family:var(--mono);background:#f8fafc;padding:8px 12px;border-radius:7px"></div>
 
-    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
-      <button onclick="pushToSheets(false)" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬆️ Push to Sheets</button>
+    <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <button onclick="forcePushAll()" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬆️ Push ALL to Sheets</button>
       <button id="pullBtn" onclick="pullFromSheets(false)" style="flex:1;padding:11px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬇️ Pull from Sheets</button>
     </div>
-
-    <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:10px 13px;font-size:11.5px;color:#78350f;margin-bottom:12px">
-      ⚠️ <strong>One-time setup needed:</strong> Update your Apps Script with the new code from <strong>☁️ Sheets Backup</strong> to enable Pull. Push works without any changes.
-    </div>
+    <div style="font-size:11px;color:#64748b;margin-bottom:14px;text-align:center">Push sends ALL your records to Sheets · Pull gets ALL records from Sheets</div>
 
     <div id="syncStatus" style="font-size:13px;min-height:20px;line-height:1.5"></div>
   </div>
