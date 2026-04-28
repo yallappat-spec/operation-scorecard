@@ -618,7 +618,10 @@ function loadSections(){
   }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
 }
-function persistSections(){localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));}
+function persistSections(){
+  localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));
+  localStorage.setItem('ahm_checklist_savedAt',new Date().toISOString());
+}
 function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
 function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
@@ -1321,6 +1324,7 @@ async function forcePushAll(){
   const payload=JSON.stringify({
     records:recs,stores:loadStores(),
     checklist:localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null,
+    checklistSavedAt:localStorage.getItem('ahm_checklist_savedAt')||null,
     backedUpAt:new Date().toISOString(),forceOverwrite:false
   });
   try{
@@ -1342,6 +1346,7 @@ async function pushToSheets(silent,includeChecklist){
     records:loadRecords(),
     stores:loadStores(),
     checklist:includeChecklist?(localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null):undefined,
+    checklistSavedAt:includeChecklist?(localStorage.getItem('ahm_checklist_savedAt')||new Date().toISOString()):undefined,
     backedUpAt:new Date().toISOString()
   });
   try{
@@ -1406,8 +1411,12 @@ function mergeIncoming(data){
   if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
     const currentCl=localStorage.getItem('ahm_checklist');
     const incomingCl=JSON.stringify(data.checklist);
-    if(currentCl!==incomingCl){
+    const mySavedAt=new Date(localStorage.getItem('ahm_checklist_savedAt')||0);
+    const theirSavedAt=new Date(data.checklistSavedAt||0);
+    // Only apply if incoming checklist is newer OR no local checklist
+    if(!currentCl||(incomingCl!==currentCl&&theirSavedAt>=mySavedAt)){
       localStorage.setItem('ahm_checklist',incomingCl);
+      localStorage.setItem('ahm_checklist_savedAt',data.checklistSavedAt||new Date().toISOString());
       SECTIONS=JSON.parse(JSON.stringify(data.checklist));
       SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
       checklistChanged=true;
