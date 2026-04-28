@@ -1342,8 +1342,9 @@ async function forcePushAll(){
 
 async function pushToSheets(silent,includeChecklist){
   const url=getGsUrl();if(!url)return;
+  const localRecs=loadRecords();
   const payload=JSON.stringify({
-    records:loadRecords(),
+    records:localRecs,
     stores:loadStores(),
     checklist:includeChecklist?(localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null):undefined,
     checklistSavedAt:includeChecklist?(localStorage.getItem('ahm_checklist_savedAt')||new Date().toISOString()):undefined,
@@ -1355,7 +1356,22 @@ async function pushToSheets(silent,includeChecklist){
     if(!silent){
       document.getElementById('syncStatus').style.color='#059669';
       document.getElementById('syncStatus').textContent='✅ Pushed to Google Sheets successfully!';
-      document.getElementById('syncInfo').textContent=loadRecords().length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+      document.getElementById('syncInfo').textContent=localRecs.length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+    }
+    // Verify push succeeded by pulling after 5s and comparing record counts
+    if(localRecs.length>0){
+      setTimeout(async()=>{
+        try{
+          const res=await fetch(url+'?action=read&t='+Date.now(),{method:'GET',redirect:'follow'});
+          const data=await res.json();
+          const sheetCount=(data.records||[]).length;
+          if(sheetCount===0&&localRecs.length>0){
+            updateSyncBadge('⚠️ Push FAILED — Sheets has 0 records! Re-deploy Apps Script.');
+          }else if(data.lastError){
+            updateSyncBadge('⚠️ Apps Script error: '+data.lastError.substring(0,60));
+          }
+        }catch(e){}
+      },5000);
     }
   }catch(e){if(!silent){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Push failed: '+e.message;}}
 }
@@ -1591,9 +1607,10 @@ setInterval(()=>autoSync(),30*1000);
     <details style="margin-top:14px">
       <summary style="font-size:12px;color:#1d4ed8;cursor:pointer;font-weight:600">📋 Apps Script Code (click to expand)</summary>
       <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">function doPost(e) {
+  var ss;
   try {
     var data = JSON.parse(e.postData.contents);
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    ss = SpreadsheetApp.getActiveSpreadsheet();
     mergeAndSaveRecords(ss, data.records || []);
     mergeAndSaveStores(ss, data.stores || []);
     if(data.checklist && data.checklist.length > 0){
@@ -1606,19 +1623,25 @@ setInterval(()=>autoSync(),30*1000);
     }
     writeSummary(ss, getRawRecords(ss));
     writeLog(ss, data.backedUpAt);
-  } catch(err) { Logger.log(err); }
+    writeLastError(ss, '');
+  } catch(err) {
+    Logger.log(err);
+    if(ss) writeLastError(ss, err.toString());
+  }
 }
 
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var cl = getChecklistMeta(ss);
+    var lastErr = getLastError(ss);
     return ContentService
       .createTextOutput(JSON.stringify({
         records: getRawRecords(ss),
         stores: getStores(ss),
         checklist: cl.data,
-        checklistSavedAt: cl.savedAt
+        checklistSavedAt: cl.savedAt,
+        lastError: lastErr
       }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
@@ -1711,6 +1734,20 @@ function getStores(ss) {
 function writeLog(ss, ts) {
   var sheet = ss.getSheetByName('BackupLog') || ss.insertSheet('BackupLog');
   sheet.appendRow([new Date(), ts, 'Sync completed']);
+}
+
+function writeLastError(ss, msg) {
+  var sheet = ss.getSheetByName('Debug') || ss.insertSheet('Debug');
+  if(sheet.getLastRow() === 0) sheet.appendRow(['Timestamp','Error']);
+  sheet.getRange(2,1).setValue(new Date());
+  sheet.getRange(2,2).setValue(msg);
+}
+
+function getLastError(ss) {
+  var sheet = ss.getSheetByName('Debug');
+  if(!sheet || sheet.getLastRow() < 2) return '';
+  var val = sheet.getRange(2,2).getValue();
+  return val ? val.toString() : '';
 }</pre>
       <button onclick="navigator.clipboard.writeText(document.getElementById('gsCode').textContent).then(()=>alert('Copied!'))"
         style="margin-top:8px;padding:6px 14px;background:#1d4ed8;color:#fff;border:none;border-radius:7px;font-size:12px;cursor:pointer">📋 Copy Code</button>
