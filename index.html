@@ -274,6 +274,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   </div>
   <div class="hdr-right">
     <div class="hdr-note">1 = Adhered · 0 = Deviation · NA = Not Applicable</div>
+    <div id="syncBadge" style="font-size:11px;font-family:var(--mono);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);padding:4px 12px;border-radius:20px;color:rgba(255,255,255,.65)">🔄 Syncing…</div>
     <button class="btn-hdr btn-hdr-green" onclick="showView('scoreTable')">📊 Score Table</button>
     <button class="btn-hdr btn-hdr-teal" onclick="showView('editor')">⚙️ Edit Checklist</button>
     <button class="btn-hdr btn-hdr-gold" onclick="showView('records')">📁 Saved Records</button>
@@ -1377,6 +1378,8 @@ async function pullFromSheets(silent){
     if(!silent){
       document.getElementById('syncStatus').style.color='#dc2626';
       document.getElementById('syncStatus').textContent='❌ Pull failed: '+e.message;
+    }else{
+      updateSyncBadge('⚠️ Sync error: '+e.message);
     }
   }
   if(!silent){const btn=document.getElementById('pullBtn');if(btn){btn.disabled=false;btn.textContent='⬇️ Pull from Sheets';}}
@@ -1435,8 +1438,10 @@ function showSyncToast(msg){
 }
 
 function updateSyncBadge(last){
-  const el=document.getElementById('syncInfo');
-  if(el)el.textContent=loadRecords().length+' records · Last sync: '+last;
+  const el=document.getElementById('syncBadge');
+  if(el){el.textContent='🔄 '+last;el.style.color=last.includes('⚠️')?'#dc2626':'#059669';}
+  const si=document.getElementById('syncInfo');
+  if(si)si.textContent=loadRecords().length+' records · Last sync: '+last;
 }
 
 /* ===== GOOGLE SHEETS BACKUP ===== */
