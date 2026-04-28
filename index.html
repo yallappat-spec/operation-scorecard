@@ -1331,7 +1331,7 @@ async function pullFromSheets(silent){
   if(!url){if(!silent){document.getElementById('syncStatus').style.color='#dc2626';document.getElementById('syncStatus').textContent='❌ Apps Script URL not set.';}return;}
   if(!silent){const btn=document.getElementById('pullBtn');btn.disabled=true;btn.textContent='Pulling…';document.getElementById('syncStatus').textContent='';}
   try{
-    const res=await fetch(url+'?action=read',{method:'GET',redirect:'follow'});
+    const res=await fetch(url+'?action=read&t='+Date.now(),{method:'GET',redirect:'follow'});
     const data=await res.json();
     if(!data.records){throw new Error('No records in response.');}
     const result=mergeIncoming(data);
@@ -1451,7 +1451,7 @@ async function runGsBackup(){
 loadSections();state=freshState();populateStoreDropdown();renderForm();
 // Auto-sync: pull on page load (1s delay) + every 5 minutes silently
 setTimeout(()=>pullFromSheets(true),1000);
-setInterval(()=>pullFromSheets(true),5*60*1000);
+setInterval(()=>pullFromSheets(true),30*1000);
 </script>
 
 <!-- Sync Data Modal -->
