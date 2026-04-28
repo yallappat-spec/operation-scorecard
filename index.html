@@ -1614,12 +1614,7 @@ setInterval(()=>autoSync(),30*1000);
     mergeAndSaveRecords(ss, data.records || []);
     mergeAndSaveStores(ss, data.stores || []);
     if(data.checklist && data.checklist.length > 0){
-      var existing = getChecklistMeta(ss);
-      var incomingTime = new Date(data.checklistSavedAt || 0);
-      var existingTime = new Date(existing.savedAt || 0);
-      if(!existing.savedAt || incomingTime >= existingTime){
-        saveChecklist(ss, data.checklist, data.checklistSavedAt);
-      }
+      saveChecklist(ss, data.checklist, data.checklistSavedAt);
     }
     writeSummary(ss, getRawRecords(ss));
     writeLog(ss, data.backedUpAt);
