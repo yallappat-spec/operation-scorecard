@@ -1477,9 +1477,12 @@ async function runGsBackup(){
 }
 
 loadSections();state=freshState();populateStoreDropdown();renderForm();
-// Auto-sync: pull on page load (1s delay) + every 5 minutes silently
-setTimeout(()=>pullFromSheets(true),1000);
-setInterval(()=>pullFromSheets(true),30*1000);
+async function autoSync(){
+  await pushToSheets(true,false);
+  await pullFromSheets(true);
+}
+setTimeout(()=>autoSync(),1500);
+setInterval(()=>autoSync(),30*1000);
 </script>
 
 <!-- Sync Data Modal -->
