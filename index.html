@@ -1590,46 +1590,54 @@ setInterval(()=>autoSync(),30*1000);
 
     <details style="margin-top:14px">
       <summary style="font-size:12px;color:#1d4ed8;cursor:pointer;font-weight:600">📋 Apps Script Code (click to expand)</summary>
-      <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">// ===== PUSH (auto-called on every audit save) =====
-function doPost(e) {
+      <pre id="gsCode" style="background:#1e2a3a;color:#e2e8f0;border-radius:8px;padding:14px;font-size:11px;overflow-x:auto;margin-top:10px;white-space:pre-wrap;line-height:1.5">function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     mergeAndSaveRecords(ss, data.records || []);
     mergeAndSaveStores(ss, data.stores || []);
+    if(data.checklist && data.checklist.length > 0){
+      var existing = getChecklistMeta(ss);
+      var incomingTime = new Date(data.checklistSavedAt || 0);
+      var existingTime = new Date(existing.savedAt || 0);
+      if(!existing.savedAt || incomingTime >= existingTime){
+        saveChecklist(ss, data.checklist, data.checklistSavedAt);
+      }
+    }
     writeSummary(ss, getRawRecords(ss));
     writeLog(ss, data.backedUpAt);
   } catch(err) { Logger.log(err); }
 }
 
-// ===== PULL (called when syncing to another system) =====
 function doGet(e) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var records = getRawRecords(ss);
-    var stores = getStores(ss);
+    var cl = getChecklistMeta(ss);
     return ContentService
-      .createTextOutput(JSON.stringify({records: records, stores: stores}))
+      .createTextOutput(JSON.stringify({
+        records: getRawRecords(ss),
+        stores: getStores(ss),
+        checklist: cl.data,
+        checklistSavedAt: cl.savedAt
+      }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch(err) {
-    return ContentService
-      .createTextOutput(JSON.stringify({error: err.toString()}))
+    return ContentService.createTextOutput(JSON.stringify({error:err.toString()}))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
-// Merge incoming records with existing ones in Sheet (no overwrite)
 function mergeAndSaveRecords(ss, incoming) {
+  if(!incoming || incoming.length === 0) return;
   var existing = getRawRecords(ss);
   var map = {};
-  existing.forEach(function(r) { map[r.id] = r; });
-  incoming.forEach(function(r) { map[r.id] = r; }); // incoming wins for same id
+  existing.forEach(function(r){ map[r.id]=r; });
+  incoming.forEach(function(r){ map[r.id]=r; });
   var merged = Object.keys(map).map(function(k){ return map[k]; });
-  merged.sort(function(a,b){ return new Date(b.savedAt) - new Date(a.savedAt); });
+  merged.sort(function(a,b){ return new Date(b.savedAt)-new Date(a.savedAt); });
   saveRawRecords(ss, merged);
 }
 
-// Merge stores (union of both)
 function mergeAndSaveStores(ss, incoming) {
   var existing = getStores(ss);
   var merged = existing.concat(incoming).filter(function(v,i,a){ return a.indexOf(v)===i; }).sort();
@@ -1639,30 +1647,48 @@ function mergeAndSaveStores(ss, incoming) {
 function saveRawRecords(ss, records) {
   var sheet = ss.getSheetByName('RawData') || ss.insertSheet('RawData');
   sheet.clearContents();
-  sheet.appendRow(['ID', 'JSON', 'Store', 'Period', 'Score%', 'Saved At']);
-  records.forEach(function(r) {
+  sheet.appendRow(['ID','JSON','Store','Period','Score%','Saved At']);
+  records.forEach(function(r){
     sheet.appendRow([r.id, JSON.stringify(r), r.store, r.period, r.pct+'%', r.savedAt]);
   });
 }
 
 function getRawRecords(ss) {
   var sheet = ss.getSheetByName('RawData');
-  if (!sheet) return [];
+  if(!sheet) return [];
   var data = sheet.getDataRange().getValues();
   var records = [];
-  for (var i = 1; i < data.length; i++) {
-    try { records.push(JSON.parse(data[i][1])); } catch(e) {}
+  for(var i=1;i<data.length;i++){
+    try{ records.push(JSON.parse(data[i][1])); }catch(e){}
   }
   return records;
+}
+
+function saveChecklist(ss, checklist, savedAt) {
+  var sheet = ss.getSheetByName('Checklist') || ss.insertSheet('Checklist');
+  sheet.clearContents();
+  sheet.appendRow(['JSON','SavedAt']);
+  sheet.getRange(2,1).setValue(JSON.stringify(checklist));
+  sheet.getRange(2,2).setValue(savedAt || new Date().toISOString());
+}
+
+function getChecklistMeta(ss) {
+  var sheet = ss.getSheetByName('Checklist');
+  if(!sheet) return {data:null, savedAt:null};
+  var val = sheet.getRange(2,1).getValue();
+  var ts = sheet.getRange(2,2).getValue();
+  if(!val) return {data:null, savedAt:null};
+  try{ return {data:JSON.parse(val), savedAt:ts||null}; }
+  catch(e){ return {data:null, savedAt:null}; }
 }
 
 function writeSummary(ss, records) {
   var sheet = ss.getSheetByName('Records') || ss.insertSheet('Records');
   sheet.clearContents();
   sheet.appendRow(['#','Store','Period','Score Obtained','Max Score','Percentage','Zone','Saved At']);
-  records.forEach(function(r, i) {
-    var zone = r.pct >= 90 ? 'Green' : r.pct >= 80 ? 'Yellow' : 'Red';
-    sheet.appendRow([i+1, r.store, r.period, r.tO, r.tM, r.pct+'%', zone, r.savedAt]);
+  records.forEach(function(r,i){
+    var zone = r.pct>=90?'Green':r.pct>=80?'Yellow':'Red';
+    sheet.appendRow([i+1,r.store,r.period,r.tO,r.tM,r.pct+'%',zone,r.savedAt]);
   });
 }
 
@@ -1670,15 +1696,15 @@ function writeStores(ss, stores) {
   var sheet = ss.getSheetByName('Stores') || ss.insertSheet('Stores');
   sheet.clearContents();
   sheet.appendRow(['Store Name']);
-  stores.forEach(function(s) { sheet.appendRow([s]); });
+  stores.forEach(function(s){ sheet.appendRow([s]); });
 }
 
 function getStores(ss) {
   var sheet = ss.getSheetByName('Stores');
-  if (!sheet) return [];
+  if(!sheet) return [];
   var data = sheet.getDataRange().getValues();
   var stores = [];
-  for (var i = 1; i < data.length; i++) { if (data[i][0]) stores.push(data[i][0]); }
+  for(var i=1;i<data.length;i++){ if(data[i][0]) stores.push(data[i][0]); }
   return stores;
 }
 
