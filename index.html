@@ -1402,6 +1402,7 @@ function mergeIncoming(data){
     const ms=[...new Set([...loadStores(),...data.stores])].sort((a,b)=>a.localeCompare(b));
     saveStores(ms);
   }
+  let checklistChanged=false;
   if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
     const currentCl=localStorage.getItem('ahm_checklist');
     const incomingCl=JSON.stringify(data.checklist);
@@ -1409,16 +1410,42 @@ function mergeIncoming(data){
       localStorage.setItem('ahm_checklist',incomingCl);
       SECTIONS=JSON.parse(JSON.stringify(data.checklist));
       SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
-      state=freshState();renderForm();populateStoreDropdown();
-      showSyncToast('Checklist updated from Sheets');
+      checklistChanged=true;
     }
+  }
+  if(checklistChanged){
+    // Auto-recalculate all saved records with new checklist weights
+    const recs=loadRecords();
+    recs.forEach(rec=>{
+      let tO=0,tM=0;const ss=[];
+      SECTIONS.forEach(sec=>{
+        let sO=0,sM=0;
+        sec.items.forEach((item,idx)=>{
+          const r=rec.state?rec.state[sec.id+'_'+idx]?.rating:null;
+          if(r==='na'||r===null||r===undefined)return;
+          sM+=item.wt;
+          const rn=parseFloat(r);
+          if(rn===1)sO+=item.wt;else if(rn===0.5)sO+=item.wt*0.5;
+        });
+        tO+=sO;tM+=sM;
+        ss.push({name:sec.name,icon:sec.icon||'📋',obt:Math.round(sO*10)/10,max:sM});
+      });
+      rec.tO=Math.round(tO*10)/10;rec.tM=tM;
+      rec.pct=tM>0?Math.round(tO/tM*100):0;
+      rec.ss=ss;rec.sections=JSON.parse(JSON.stringify(SECTIONS));
+    });
+    saveRecordsLS(recs);
+    state=freshState();renderForm();populateStoreDropdown();
+    renderScoreTable();renderRecords();
+    if(typeof renderGapAnalysis==='function')renderGapAnalysis();
+    showSyncToast('✅ Checklist & scores updated from Sheets');
   }
   if(added>0||updated>0){
     const msg=(added>0?added+' new':'')+(added>0&&updated>0?', ':'')+( updated>0?updated+' updated':'')+' record'+(added+updated>1?'s':'')+' synced';
     showSyncToast(msg);
     refreshCurrentView();
   }
-  return{added,updated};
+  return{added,updated,checklistChanged};
 }
 
 function refreshCurrentView(){
