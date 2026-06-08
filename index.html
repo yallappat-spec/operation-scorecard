@@ -980,7 +980,7 @@ function updCedStats(){
 function saveChecklist(){
   let empty=false;SECTIONS.forEach(sec=>sec.items.forEach(item=>{if(!item.clause.trim())empty=true;}));
   if(empty){alert('Please fill in all clause text.');return;}if(!SECTIONS.length){alert('Need at least one section.');return;}
-  persistSections();state=freshState();
+  persistSections();state=freshState();renderForm();
   const f=document.getElementById('cedFlash');f.style.display='block';f.textContent='✅ Checklist saved! Syncing to Sheets…';
   pushToSheets(true,true).then(()=>{f.textContent='✅ Checklist saved & synced to Sheets!';setTimeout(()=>{f.style.display='none';f.textContent='✅ Checklist saved!';},3000);});
 }
