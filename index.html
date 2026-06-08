@@ -634,7 +634,7 @@ function showView(v){
   if(el)el.classList.add('active');
   if(v==='records')renderRecords();
   if(v==='editor'){renderEditor();renderStoreTags();}
-  if(v==='form'){populateStoreDropdown();}
+  if(v==='form'){populateStoreDropdown();renderForm();}
   if(v==='scoreTable'){renderScoreTable();}
   if(v==='gapAnalysis'){renderGapAnalysis();}
 }
