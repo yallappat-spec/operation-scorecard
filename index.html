@@ -625,7 +625,26 @@ function persistSections(){
 function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
 function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
-function saveRecordsLS(r){localStorage.setItem('ahm_records',JSON.stringify(r));}
+function saveRecordsLS(r){
+  const json=JSON.stringify(r);
+  try{
+    localStorage.setItem('ahm_records',json);
+  }catch(e){
+    // localStorage quota exceeded — retry after stripping embedded images
+    const stripped=r.map(rec=>{
+      if(!rec.state)return rec;
+      const s={};
+      Object.keys(rec.state).forEach(k=>{const v=rec.state[k];s[k]=v.img?{...v,img:undefined}:v;});
+      return{...rec,state:s};
+    });
+    try{
+      localStorage.setItem('ahm_records',JSON.stringify(stripped));
+      alert('⚠️ Storage limit reached. Record saved but attached photos were dropped to free space.\n\nTip: Export your data to Google Sheets regularly to avoid this.');
+    }catch(e2){
+      alert('❌ Could not save: device storage is full.\n\nPlease export to Google Sheets and clear old records.');
+    }
+  }
+}
 let state={},editingId=null,pendingResult=null;
 function freshState(){const s={};SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{s[sec.id+'_'+i]={rating:1,obs:''}}));return s;}
 function showView(v){
@@ -805,10 +824,14 @@ function doSubmit(){
 }
 function saveRecord(){
   if(!pendingResult)return;
-  const recs=loadRecords();const idx=recs.findIndex(r=>r.id===pendingResult.id);
-  if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
-  saveRecordsLS(recs);closeModal();showView('scoreTable');
-  pushToSheets(true,false);
+  try{
+    const recs=loadRecords();const idx=recs.findIndex(r=>r.id===pendingResult.id);
+    if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
+    saveRecordsLS(recs);closeModal();showView('scoreTable');
+    pushToSheets(true,false);
+  }catch(e){
+    alert('❌ Save failed: '+e.message);
+  }
 }
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show');}
 function renderScoreTable(){
