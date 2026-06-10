@@ -624,25 +624,41 @@ function persistSections(){
 }
 function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
-function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
-function saveRecordsLS(r){
-  const json=JSON.stringify(r);
+function loadRecords(){
   try{
-    localStorage.setItem('ahm_records',json);
-  }catch(e){
-    // localStorage quota exceeded — retry after stripping embedded images
-    const stripped=r.map(rec=>{
-      if(!rec.state)return rec;
-      const s={};
-      Object.keys(rec.state).forEach(k=>{const v=rec.state[k];s[k]=v.img?{...v,img:undefined}:v;});
-      return{...rec,state:s};
+    const recs=JSON.parse(localStorage.getItem('ahm_records')||'[]');
+    // merge separately stored images back into state
+    recs.forEach(rec=>{
+      if(!rec.id||!rec.state)return;
+      try{
+        const imgs=JSON.parse(localStorage.getItem('ahm_imgs_'+rec.id)||'{}');
+        Object.keys(imgs).forEach(k=>{if(rec.state[k])rec.state[k].img=imgs[k];});
+      }catch(e){}
     });
-    try{
-      localStorage.setItem('ahm_records',JSON.stringify(stripped));
-      alert('⚠️ Storage limit reached. Record saved but attached photos were dropped to free space.\n\nTip: Export your data to Google Sheets regularly to avoid this.');
-    }catch(e2){
-      alert('❌ Could not save: device storage is full.\n\nPlease export to Google Sheets and clear old records.');
+    return recs;
+  }catch{return[]}
+}
+function saveRecordsLS(r){
+  // Strip images out of records and store them separately to avoid quota issues
+  const stripped=r.map(rec=>{
+    if(!rec.id||!rec.state)return rec;
+    const imgs={};
+    const s={};
+    Object.keys(rec.state).forEach(k=>{
+      const v=rec.state[k];
+      if(v&&v.img){imgs[k]=v.img;s[k]={...v};delete s[k].img;}
+      else s[k]=v;
+    });
+    // save images separately, silently drop if too large
+    if(Object.keys(imgs).length){
+      try{localStorage.setItem('ahm_imgs_'+rec.id,JSON.stringify(imgs));}catch(e){}
     }
+    return{...rec,state:s};
+  });
+  try{
+    localStorage.setItem('ahm_records',JSON.stringify(stripped));
+  }catch(e){
+    alert('❌ Could not save: device storage is full. Please export to Google Sheets and clear old records.');
   }
 }
 let state={},editingId=null,pendingResult=null;
@@ -950,7 +966,7 @@ function cancelEdit(){
   document.getElementById('submitBtn').textContent='Submit & Save →';document.getElementById('storeName').value='';document.getElementById('auditPeriod').value='';renderForm();
 }
 function newAudit(){cancelEdit();showView('form');}
-function deleteRecord(id){if(!confirm('Delete this record?'))return;saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();}
+function deleteRecord(id){if(!confirm('Delete this record?'))return;localStorage.removeItem('ahm_imgs_'+id);saveRecordsLS(loadRecords().filter(r=>r.id!==id));renderRecords();}
 function renderEditor(){
   const cont=document.getElementById('editorSecs');cont.innerHTML='';
   SECTIONS.forEach((sec,si)=>{
