@@ -617,6 +617,8 @@ function loadSections(){
     SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
   }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
+  // clean up legacy ahm_imgs_* keys left by older version
+  Object.keys(localStorage).filter(k=>k.startsWith('ahm_imgs_')).forEach(k=>localStorage.removeItem(k));
 }
 function persistSections(){
   localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));
@@ -624,41 +626,19 @@ function persistSections(){
 }
 function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
-function loadRecords(){
-  try{
-    const recs=JSON.parse(localStorage.getItem('ahm_records')||'[]');
-    // merge separately stored images back into state
-    recs.forEach(rec=>{
-      if(!rec.id||!rec.state)return;
-      try{
-        const imgs=JSON.parse(localStorage.getItem('ahm_imgs_'+rec.id)||'{}');
-        Object.keys(imgs).forEach(k=>{if(rec.state[k])rec.state[k].img=imgs[k];});
-      }catch(e){}
-    });
-    return recs;
-  }catch{return[]}
-}
-function saveRecordsLS(r){
-  // Strip images out of records and store them separately to avoid quota issues
-  const stripped=r.map(rec=>{
-    if(!rec.id||!rec.state)return rec;
-    const imgs={};
+function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
+function stripImgs(r){
+  return r.map(rec=>{
+    if(!rec.state)return rec;
     const s={};
-    Object.keys(rec.state).forEach(k=>{
-      const v=rec.state[k];
-      if(v&&v.img){imgs[k]=v.img;s[k]={...v};delete s[k].img;}
-      else s[k]=v;
-    });
-    // save images separately, silently drop if too large
-    if(Object.keys(imgs).length){
-      try{localStorage.setItem('ahm_imgs_'+rec.id,JSON.stringify(imgs));}catch(e){}
-    }
+    Object.keys(rec.state).forEach(k=>{const v=rec.state[k];s[k]=v&&v.img?{...v,img:undefined}:v;});
     return{...rec,state:s};
   });
-  try{
-    localStorage.setItem('ahm_records',JSON.stringify(stripped));
-  }catch(e){
-    alert('❌ Could not save: device storage is full. Please export to Google Sheets and clear old records.');
+}
+function saveRecordsLS(r){
+  // Never store images in localStorage — they go to Google Sheets only
+  try{localStorage.setItem('ahm_records',JSON.stringify(stripImgs(r)));}catch(e){
+    alert('❌ Could not save to local storage: '+e.message);
   }
 }
 let state={},editingId=null,pendingResult=null;
@@ -843,8 +823,9 @@ function saveRecord(){
   try{
     const recs=loadRecords();const idx=recs.findIndex(r=>r.id===pendingResult.id);
     if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
-    saveRecordsLS(recs);closeModal();showView('scoreTable');
-    pushToSheets(true,false);
+    saveRecordsLS(recs); // saves without images (localStorage only)
+    closeModal();showView('scoreTable');
+    pushToSheets(true,false,recs); // push full records including images to Sheets
   }catch(e){
     alert('❌ Save failed: '+e.message);
   }
@@ -1379,9 +1360,9 @@ async function forcePushAll(){
   btn.disabled=false;btn.textContent='⬆️ Push ALL to Sheets';
 }
 
-async function pushToSheets(silent,includeChecklist){
+async function pushToSheets(silent,includeChecklist,recsOverride){
   const url=getGsUrl();if(!url)return;
-  const localRecs=loadRecords();
+  const localRecs=recsOverride||loadRecords();
   const payload=JSON.stringify({
     records:localRecs,
     stores:loadStores(),
