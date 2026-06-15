@@ -825,7 +825,7 @@ function saveRecord(){
     if(idx>=0)recs[idx]=pendingResult;else recs.unshift(pendingResult);
     saveRecordsLS(recs); // saves without images (localStorage only)
     closeModal();showView('scoreTable');
-    pushToSheets(true,false,recs); // push full records including images to Sheets
+    pushToSheets(true,false,recs); // push to Sheets (photos stripped inside pushToSheets)
   }catch(e){
     alert('❌ Save failed: '+e.message);
   }
@@ -1194,8 +1194,11 @@ function getGapData(){
   // Build per-store gap data
   const storeMap={};
   recs.forEach(rec=>{
-    const key=rec.store||'Unnamed';
-    if(!storeMap[key])storeMap[key]={store:key,period:rec.period,pct:rec.pct,totalLost:0,deviations:[],partials:[]};
+    // Key by store AND period so each saved audit is its own block and reconciles
+    // with the Score Table. Keying by store alone merged multiple months under one
+    // card, summing issues across periods while showing only one period's score.
+    const key=(rec.store||'Unnamed')+'||'+(rec.period||'');
+    if(!storeMap[key])storeMap[key]={store:rec.store||'Unnamed',period:rec.period,pct:rec.pct,totalLost:0,deviations:[],partials:[]};
     const secs=rec.sections||SECTIONS;
     secs.forEach(sec=>{
       sec.items.forEach((item,idx)=>{
@@ -1243,7 +1246,7 @@ function renderGapAnalysis(){
   sumEl.innerHTML=data.map(s=>{
     const devCount=s.deviations.length;const parCount=s.partials.length;
     const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
-    return`<div class="gap-sum-card" onclick="scrollToStore('gap_${s.store.replace(/[^a-zA-Z0-9]/g,'_')}')">
+    return`<div class="gap-sum-card" onclick="scrollToStore('gap_${(s.store+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_')}')">
       <div class="gap-sum-store" title="${esc(s.store)}">${esc(s.store)}</div>
       <div class="gap-sum-pct" style="color:${pc}">${s.pct}%</div>
       <div class="gap-sum-row">
@@ -1257,7 +1260,7 @@ function renderGapAnalysis(){
   detEl.innerHTML=data.map(s=>{
     const devCount=s.deviations.length;const parCount=s.partials.length;
     const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
-    const id='gap_'+s.store.replace(/[^a-zA-Z0-9]/g,'_');
+    const id='gap_'+(s.store+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_');
     const riskLabel={H:'🔴 High',M:'🟡 Med',L:'🟢 Low'};
     const riskCls={H:'rH',M:'rM',L:'rL'};
     let rows='';
@@ -1342,7 +1345,7 @@ async function forcePushAll(){
   document.getElementById('syncStatus').textContent='';
   const url=getGsUrl();
   const payload=JSON.stringify({
-    records:recs,stores:loadStores(),
+    records:stripImgs(recs),stores:loadStores(),
     checklist:localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null,
     checklistSavedAt:localStorage.getItem('ahm_checklist_savedAt')||null,
     backedUpAt:new Date().toISOString(),forceOverwrite:false
@@ -1364,7 +1367,10 @@ async function pushToSheets(silent,includeChecklist,recsOverride){
   const url=getGsUrl();if(!url)return;
   const localRecs=recsOverride||loadRecords();
   const payload=JSON.stringify({
-    records:localRecs,
+    // Strip photos: base64 images bloat a record's JSON past Google Sheets'
+    // 50,000-char-per-cell limit, which makes the Apps Script write throw and
+    // silently drop records (no-cors hides the failure). Sync scores/observations only.
+    records:stripImgs(localRecs),
     stores:loadStores(),
     checklist:includeChecklist?(localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null):undefined,
     checklistSavedAt:includeChecklist?(localStorage.getItem('ahm_checklist_savedAt')||new Date().toISOString()):undefined,
@@ -1538,7 +1544,7 @@ async function runGsBackup(){
   const btn=document.getElementById('gsBkpBtn');
   const status=document.getElementById('gsStatus');
   btn.disabled=true;btn.textContent='Sending…';status.textContent='';
-  const payload=JSON.stringify({records:recs,stores:stores,backedUpAt:new Date().toISOString()});
+  const payload=JSON.stringify({records:stripImgs(recs),stores:stores,backedUpAt:new Date().toISOString()});
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
     status.style.color='#059669';
@@ -1684,11 +1690,31 @@ function mergeAndSaveStores(ss, incoming) {
 
 function saveRawRecords(ss, records) {
   var sheet = ss.getSheetByName('RawData') || ss.insertSheet('RawData');
-  sheet.clearContents();
-  sheet.appendRow(['ID','JSON','Store','Period','Score%','Saved At']);
+  // Build every row in memory FIRST, then clear + write once. The old code
+  // cleared the sheet and appended row-by-row, so a single oversized record
+  // (a cell >50,000 chars) made appendRow throw and left the sheet wiped with
+  // only the rows written before the failure.
+  var rows = [['ID','JSON','Store','Period','Score%','Saved At']];
   records.forEach(function(r){
-    sheet.appendRow([r.id, JSON.stringify(r), r.store, r.period, r.pct+'%', r.savedAt]);
+    var json;
+    try { json = JSON.stringify(r); } catch(e){ json = ''; }
+    // Defensive: drop images, then hard-cap, so no cell can exceed the 50k limit.
+    if(json.length > 49000){ json = JSON.stringify(stripImages(r)); }
+    if(json.length > 49000){ json = json.substring(0, 49000); }
+    rows.push([r.id, json, r.store || '', r.period || '', (r.pct||0)+'%', r.savedAt || '']);
   });
+  sheet.clearContents();
+  sheet.getRange(1, 1, rows.length, 6).setValues(rows);
+}
+
+function stripImages(r){
+  var c = JSON.parse(JSON.stringify(r));
+  if(c.state){
+    Object.keys(c.state).forEach(function(k){
+      if(c.state[k] && c.state[k].img) c.state[k].img = '';
+    });
+  }
+  return c;
 }
 
 function getRawRecords(ss) {
