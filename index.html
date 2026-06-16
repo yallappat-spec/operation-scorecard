@@ -705,7 +705,7 @@ function renderForm(){
       tr.innerHTML=`<td class="td-sno">${idx+1}</td><td class="td-clause">${esc(item.clause)}</td><td class="td-center">${rl}</td><td class="td-num">${item.wt}</td>
         <td class="td-rating"><div class="tog"><button id="b1_${key}" onclick="rate('${key}',1)">1</button><button id="bh_${key}" onclick="rate('${key}',0.5)">0.5</button><button id="b0_${key}" onclick="rate('${key}',0)">0</button><button id="bna_${key}" onclick="rate('${key}','na')">NA</button></div></td>
         <td class="td-obs">
-          <textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" onchange="setObs('${key}',this.value)" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+          <textarea class="obs" rows="1" id="obs_${key}" placeholder="Observation…" oninput="setObs('${key}',this.value);this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
             <label class="img-btn" id="imgbtn_${key}">📷 Attach Photo<input type="file" accept="image/*" capture="environment" style="display:none" onchange="attachImg('${key}',this)"/></label>
             <span id="imgrem_${key}" style="display:none"><img id="imgprev_${key}" class="img-preview" onclick="viewImg('${key}')"/><span class="img-remove" onclick="removeImg('${key}')">✕ Remove</span></span>
@@ -799,6 +799,7 @@ function updateScores(){
   document.getElementById('progLbl').textContent=`${ar} of ${tot} items rated`;const pp=tot>0?Math.round(ar/tot*100):0;document.getElementById('progPct').textContent=pp+'%';document.getElementById('progFill').style.width=pp+'%';
 }
 function doSubmit(){
+  SECTIONS.forEach(sec=>sec.items.forEach((_,idx)=>{const k=sec.id+'_'+idx;const el=document.getElementById('obs_'+k);if(el){if(!state[k])state[k]={rating:null,obs:''};state[k].obs=el.value;}}));
   const unrated=[];
   SECTIONS.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const r=state[key]?.rating;if(r===null||r===undefined)unrated.push(sec.name+' → '+item.clause);});});
   if(unrated.length>0){alert('⚠️ Please rate all clauses!\n\nUnrated ('+unrated.length+'):\n• '+unrated.slice(0,5).join('\n• ')+(unrated.length>5?'\n• ...and '+(unrated.length-5)+' more':''));return;}
