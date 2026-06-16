@@ -1441,7 +1441,9 @@ function mergeIncoming(data){
   incoming.forEach(rec=>{
     const idx=merged.findIndex(r=>r.id===rec.id);
     if(idx>=0){
-      if(JSON.stringify(merged[idx])!==JSON.stringify(rec)){merged[idx]=rec;updated++;}
+      const localTime=new Date(merged[idx].savedAt||0).getTime();
+      const incomingTime=new Date(rec.savedAt||0).getTime();
+      if(incomingTime>localTime){merged[idx]=rec;updated++;}
     }else{merged.push(rec);added++;}
   });
   merged.sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
