@@ -1561,8 +1561,12 @@ async function runGsBackup(){
 }
 
 loadSections();state=freshState();populateStoreDropdown();renderForm();
-// On page load: push all local data once, then start pull-only cycle
 async function autoSync(){
+  // Always push local data first so Sheets stays up to date even if a
+  // previous save-push silently failed, then pull to pick up edits from
+  // other devices. mergeIncoming keeps the newer record by savedAt, so
+  // a stale Sheets copy can never overwrite a more recent local edit.
+  if(loadRecords().length>0) await pushToSheets(true,false);
   await pullFromSheets(true);
 }
 async function initialSync(){
