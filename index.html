@@ -937,10 +937,10 @@ function editRecord(id){
   if(rec.sections)SECTIONS=JSON.parse(JSON.stringify(rec.sections));
   editingId=id;state=JSON.parse(JSON.stringify(rec.state));
   populateStoreDropdown();document.getElementById('storeName').value=rec.store||'';document.getElementById('auditPeriod').value=rec.period||'';
-  renderForm();
-  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}if(state[k]?.img)renderImgPreview(k,state[k].img);}));
   document.getElementById('editBanner').style.display='flex';document.getElementById('submitBtn').textContent='Update & Save →';
-  showView('form');window.scrollTo({top:0,behavior:'smooth'});
+  showView('form');
+  SECTIONS.forEach(sec=>sec.items.forEach((_,idx2)=>{const k=sec.id+'_'+idx2;rfBtns(k);const el=document.getElementById('obs_'+k);if(el&&state[k]?.obs){el.value=state[k].obs;el.style.height='auto';el.style.height=el.scrollHeight+'px';}if(state[k]?.img)renderImgPreview(k,state[k].img);}));
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 function cancelEdit(){
   loadSections();editingId=null;state=freshState();document.getElementById('editBanner').style.display='none';
