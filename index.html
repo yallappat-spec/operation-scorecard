@@ -726,12 +726,13 @@ function downloadRatingTemplate(){
   let stores=loadStores();
   if(!stores.length)stores=['<ENTER STORE NAME>'];
   const month=document.getElementById('auditPeriod')?.value||'';
+  const year=new Date().getFullYear();
   const riskName={H:'High',M:'Medium',L:'Low'};
-  let csv='Store,Month,Section,Clause,Risk,Wt.Max,Rating (1/0.5/0/NA),Observation\n';
+  let csv='Store,Year,Month,Section,Clause,Risk,Wt.Max,Rating (1/0.5/0/NA),Observation\n';
   stores.forEach(store=>{
     SECTIONS.forEach(sec=>{
       sec.items.forEach(item=>{
-        csv+=[csvQ(store),csvQ(month),csvQ(sec.name),csvQ(item.clause),csvQ(riskName[item.risk]||item.risk),item.wt,'',''].join(',')+'\n';
+        csv+=[csvQ(store),year,csvQ(month),csvQ(sec.name),csvQ(item.clause),csvQ(riskName[item.risk]||item.risk),item.wt,'',''].join(',')+'\n';
       });
     });
   });
@@ -754,7 +755,7 @@ function processRatingCSV(text){
   if(rows.length<2){alert('No data rows found in the file.');return;}
   const header=rows[0].map(h=>String(h).trim().toLowerCase());
   const find=(...names)=>{for(const n of names){const i=header.findIndex(h=>h===n||h.startsWith(n));if(i>=0)return i;}return -1;};
-  const ci={store:find('store'),month:find('month','period'),section:find('section'),clause:find('clause','audit clause'),rating:find('rating'),obs:find('observation','obs','remark')};
+  const ci={store:find('store'),year:find('year'),month:find('month','period'),section:find('section'),clause:find('clause','audit clause'),rating:find('rating'),obs:find('observation','obs','remark')};
   if(ci.store<0||ci.clause<0||ci.rating<0){
     alert('❌ File must contain at least Store, Clause and Rating columns.\n\nTip: use “⬇ Download Rating Template” to get the correct format.');
     return;
@@ -765,8 +766,9 @@ function processRatingCSV(text){
     const store=String(r[ci.store]||'').trim();
     if(!store||store==='<ENTER STORE NAME>')continue;
     const month=ci.month>=0?String(r[ci.month]||'').trim():'';
-    const key=store+'||'+month;
-    if(!groups[key])groups[key]={store,month,byClause:{},bySecClause:{}};
+    const year=ci.year>=0?String(r[ci.year]||'').trim():'';
+    const key=store+'||'+year+'||'+month;
+    if(!groups[key])groups[key]={store,year,month,byClause:{},bySecClause:{}};
     const cl=normClause(r[ci.clause]);if(!cl)continue;
     const sec=ci.section>=0?normClause(r[ci.section]):'';
     const val={rating:r[ci.rating],obs:ci.obs>=0?r[ci.obs]:''};
@@ -810,16 +812,17 @@ function processRatingCSV(text){
     tO=Math.round(tO*10)/10;
     const pct=tM>0?Math.round(tO/tM*100):0;
     const period=g.month||'—';
-    const exIdx=recs.findIndex(r=>(r.store||'').toLowerCase()===g.store.toLowerCase()&&(r.period||'')===period);
+    const year=g.year||'';
+    const exIdx=recs.findIndex(r=>(r.store||'').toLowerCase()===g.store.toLowerCase()&&(r.period||'')===period&&(r.year||'')===year);
     const rec={
       id:exIdx>=0?recs[exIdx].id:('rec_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),
-      store:g.store,period,tO,tM,pct,ss,
+      store:g.store,period,year,tO,tM,pct,ss,
       savedAt:new Date().toISOString(),
       state:st,sections:JSON.parse(JSON.stringify(SECTIONS))
     };
     if(exIdx>=0){recs[exIdx]=rec;updated++;}else{recs.unshift(rec);created++;}
     tRated+=rated;tBlank+=blank;tInvalid+=invalid;tUnmatched+=unmatched;
-    summary.push(g.store+' ('+period+'): '+pct+'%');
+    summary.push(g.store+' ('+(year?year+' ':'')+period+'): '+pct+'%');
   });
   if(!created&&!updated){
     alert('No records saved — every store row had a blank Rating column.\n\nFill the Rating column (1 / 0.5 / 0 / NA) and upload again.');
@@ -1019,7 +1022,7 @@ function renderScoreTable(){
     const{short,zone}=getRtg(rec.pct);const zc=zone==='green'?'zone-g':zone==='yellow'?'zone-y':'zone-r';
     return`<tr><td style="font-family:var(--mono);font-size:11px;color:var(--muted);text-align:center">${i+1}</td>
       <td style="font-weight:600;color:var(--navy)">${esc(rec.store||'—')}</td>
-      <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${esc(rec.period||'—')}</td>
+      <td style="font-family:var(--mono);font-size:12px;color:var(--muted)">${esc(rec.period||'—')}${rec.year?' '+esc(rec.year):''}</td>
       <td style="font-family:var(--mono);font-weight:700;text-align:center">${rec.tO}</td>
       <td style="font-family:var(--mono);color:var(--muted);text-align:center">${rec.tM}</td>
       <td style="font-family:var(--mono);font-weight:800;font-size:15px;text-align:center;color:${pc}">${rec.pct}%</td>
@@ -1064,8 +1067,8 @@ function recalculateAllScores(){
 
 function exportScoreCSV(){
   const recs=loadRecords();if(!recs.length){alert('No records.');return;}
-  let csv='#,Store Name,Month,Score Obtained,Max Score,Score %,Zone\n';
-  recs.forEach((r,i)=>{const{short}=getRtg(r.pct);csv+=(i+1)+',"'+(r.store||'').replace(/"/g,'""')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
+  let csv='#,Store Name,Year,Month,Score Obtained,Max Score,Score %,Zone\n';
+  recs.forEach((r,i)=>{const{short}=getRtg(r.pct);csv+=(i+1)+',"'+(r.store||'').replace(/"/g,'""')+'","'+(r.year||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='ScoreSummary.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function renderRecords(){
@@ -1087,7 +1090,7 @@ function renderRecords(){
       const{short}=getRtg(rec.pct);const tc=rec.pct>=90?'rA':rec.pct>=80?'rB':'rC';const pc=rec.pct>=90?'var(--green)':rec.pct>=80?'var(--amber)':'var(--red)';
       const saved=rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}):'';
       el.innerHTML+=`<div class="record-card">
-        <div class="rc-top"><div><div class="rc-store">${esc(rec.store||'Unnamed')}</div><div class="rc-meta">${rec.period||'—'} · Saved: ${saved}</div></div>
+        <div class="rc-top"><div><div class="rc-store">${esc(rec.store||'Unnamed')}</div><div class="rc-meta">${rec.period||'—'}${rec.year?' '+rec.year:''} · Saved: ${saved}</div></div>
         <div class="rc-right"><div class="rc-pct" style="color:${pc}">${rec.pct}%</div><div class="rc-tag ${tc}">${short}</div></div></div>
         <div class="rc-btns"><button class="btn-sm btn-edit-sm" onclick="editRecord('${rec.id}')">✏️ Edit</button><button class="btn-sm" style="background:#fff0f0;color:#dc2626;border:1px solid #fecaca" onclick="downloadSingleReport('${rec.id}')">📄 Download Report</button><button class="btn-sm btn-del-sm" onclick="deleteRecord('${rec.id}')">🗑 Delete</button></div>
       </div>`;
@@ -1287,7 +1290,7 @@ table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e
 <div class="score-card">
   <div>
     <div class="store-name">${esc(rec.store||'Unnamed Store')}</div>
-    <div class="meta">📅 Audit Period: <strong>${rec.period||'—'}</strong></div>
+    <div class="meta">📅 Audit Period: <strong>${rec.period||'—'}${rec.year?' '+esc(rec.year):''}</strong></div>
     <div class="meta">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
   </div>
   <div class="score-box">
@@ -1329,10 +1332,10 @@ function exportAllPDF(){
 function exportAllExcel(){
   const recs=getExportRecs();if(!recs)return;
   const label=getExportLabel();
-  let csv='Store Name,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
-  recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
-  csv+='\n\nDetailed Responses\nStore,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
-  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
+  let csv='Store Name,Year,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
+  recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.year||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
+  csv+='\n\nDetailed Responses\nStore,Year,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
+  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.year||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='OpScorecard_'+label+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function downloadSingleReport(id){
@@ -1359,8 +1362,8 @@ function getGapData(){
     // Key by store AND period so each saved audit is its own block and reconciles
     // with the Score Table. Keying by store alone merged multiple months under one
     // card, summing issues across periods while showing only one period's score.
-    const key=(rec.store||'Unnamed')+'||'+(rec.period||'');
-    if(!storeMap[key])storeMap[key]={store:rec.store||'Unnamed',period:rec.period,pct:rec.pct,totalLost:0,deviations:[],partials:[]};
+    const key=(rec.store||'Unnamed')+'||'+(rec.year||'')+'||'+(rec.period||'');
+    if(!storeMap[key])storeMap[key]={store:rec.store||'Unnamed',period:rec.period,year:rec.year||'',pct:rec.pct,totalLost:0,deviations:[],partials:[]};
     const secs=rec.sections||SECTIONS;
     secs.forEach(sec=>{
       sec.items.forEach((item,idx)=>{
@@ -1408,7 +1411,7 @@ function renderGapAnalysis(){
   sumEl.innerHTML=data.map(s=>{
     const devCount=s.deviations.length;const parCount=s.partials.length;
     const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
-    return`<div class="gap-sum-card" onclick="scrollToStore('gap_${(s.store+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_')}')">
+    return`<div class="gap-sum-card" onclick="scrollToStore('gap_${(s.store+'_'+(s.year||'')+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_')}')">
       <div class="gap-sum-store" title="${esc(s.store)}">${esc(s.store)}</div>
       <div class="gap-sum-pct" style="color:${pc}">${s.pct}%</div>
       <div class="gap-sum-row">
@@ -1422,7 +1425,7 @@ function renderGapAnalysis(){
   detEl.innerHTML=data.map(s=>{
     const devCount=s.deviations.length;const parCount=s.partials.length;
     const pc=s.pct>=90?'var(--green)':s.pct>=80?'var(--amber)':'var(--red)';
-    const id='gap_'+(s.store+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_');
+    const id='gap_'+(s.store+'_'+(s.year||'')+'_'+(s.period||'')).replace(/[^a-zA-Z0-9]/g,'_');
     const riskLabel={H:'🔴 High',M:'🟡 Med',L:'🟢 Low'};
     const riskCls={H:'rH',M:'rM',L:'rL'};
     let rows='';
@@ -1448,7 +1451,7 @@ function renderGapAnalysis(){
       <div class="gap-store-hdr" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">
         <div>
           <div class="gap-store-name">${esc(s.store)}</div>
-          <div class="gap-store-meta">${s.period||'All months'} · Score: <span style="color:${pc};font-weight:700">${s.pct}%</span> · Issues: ${s.issues.length} · Points Lost: ${Math.round(s.totalLost*10)/10}</div>
+          <div class="gap-store-meta">${s.period||'All months'}${s.year?' '+esc(s.year):''} · Score: <span style="color:${pc};font-weight:700">${s.pct}%</span> · Issues: ${s.issues.length} · Points Lost: ${Math.round(s.totalLost*10)/10}</div>
         </div>
         <div class="gap-store-right">
           <span class="gap-sum-badge gap-dev">0 Deviation: ${devCount}</span>
@@ -1478,10 +1481,10 @@ function scrollToStore(id){
 function exportGapCSV(){
   const data=getGapData();
   if(!data.length){alert('No gap data to export.');return;}
-  let csv='Store,Period,Score%,Section,Audit Clause,Risk,Wt.Max,Rating,Points Lost,Observation\n';
+  let csv='Store,Year,Period,Score%,Section,Audit Clause,Risk,Wt.Max,Rating,Points Lost,Observation\n';
   data.forEach(s=>{
     s.issues.forEach(issue=>{
-      csv+='"'+esc2(s.store)+'","'+esc2(s.period||'')+'",'+s.pct+'%,"'+esc2(issue.section)+'","'+esc2(issue.clause)+'","'+({H:'High',M:'Medium',L:'Low'}[issue.risk]||issue.risk)+'",'+issue.wt+','+issue.rating+','+issue.lost+',"'+esc2(issue.obs)+'"\n';
+      csv+='"'+esc2(s.store)+'","'+esc2(s.year||'')+'","'+esc2(s.period||'')+'",'+s.pct+'%,"'+esc2(issue.section)+'","'+esc2(issue.clause)+'","'+({H:'High',M:'Medium',L:'Low'}[issue.risk]||issue.risk)+'",'+issue.wt+','+issue.rating+','+issue.lost+',"'+esc2(issue.obs)+'"\n';
     });
   });
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
