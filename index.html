@@ -308,6 +308,18 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
       </div>
     </div>
   </div>
+  <div class="info-card" style="background:linear-gradient(90deg,#f0fdf4,#eff6ff);border-color:#bbf7d0">
+    <div class="card-hdr" style="color:#059669">⚡ Bulk Upload Ratings — Store-wise (Save Time)</div>
+    <div style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:13px">
+      Rate many stores at once in Excel instead of tapping each clause here.
+      <strong>1)</strong> Download the template &nbsp;·&nbsp; <strong>2)</strong> Fill the <em>Rating</em> column (<strong>1 / 0.5 / 0 / NA</strong>) for each store &nbsp;·&nbsp; <strong>3)</strong> Upload it back — every store is saved as an audit record automatically.
+    </div>
+    <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+      <button class="btn-add-store" style="background:#1d4ed8" onclick="downloadRatingTemplate()">⬇ Download Rating Template</button>
+      <label class="btn-add-store" style="background:#0f766e;cursor:pointer">📥 Upload Filled Template<input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadRatings(this)"/></label>
+      <span style="font-size:11px;color:var(--muted)">Template lists every clause for each store. Blank Rating = left unrated. Imported records can still be edited under 📁 Saved Records.</span>
+    </div>
+  </div>
   <div class="legend">
     <span class="legend-lbl">Risk Level:</span>
     <span class="risk rH">🔴 High Risk</span><span class="risk rM">🟡 Medium Risk</span><span class="risk rL">🟢 Low Risk</span>
@@ -678,6 +690,154 @@ function bulkUploadStores(input){
 function clearAllStores(){if(!confirm('Clear ALL stores?'))return;saveStores([]);renderStoreTags();populateStoreDropdown();}
 function downloadSampleCSV(){
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['BIM - JP ROAD\nBLR - KORAMANGALA'],{type:'text/csv'}));a.download='sample_stores.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+}
+/* ===== BULK RATINGS UPLOAD (store-wise) ===== */
+function normClause(s){return String(s||'').toLowerCase().replace(/\s+/g,' ').trim();}
+function csvQ(s){return'"'+String(s==null?'':s).replace(/"/g,'""')+'"';}
+function parseCSV(text){
+  const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){
+      if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}
+      else cur+=c;
+    }else{
+      if(c==='"')q=true;
+      else if(c===','){row.push(cur);cur='';}
+      else if(c==='\r'){/*ignore*/}
+      else if(c==='\n'){row.push(cur);rows.push(row);row=[];cur='';}
+      else cur+=c;
+    }
+  }
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows;
+}
+function parseRatingVal(v){
+  const s=String(v==null?'':v).trim().replace(/^"|"$/g,'').trim().toLowerCase();
+  if(s==='')return{rating:null,blank:true};
+  if(s==='na'||s==='n/a'||s==='not applicable')return{rating:'na'};
+  if(s==='1'||s==='1.0'||s==='yes'||s==='y')return{rating:1};
+  if(s==='0'||s==='0.0'||s==='no'||s==='n')return{rating:0};
+  if(s==='0.5'||s==='.5'||s==='half'||s==='partial')return{rating:0.5};
+  return{rating:null,invalid:true};
+}
+function downloadRatingTemplate(){
+  let stores=loadStores();
+  if(!stores.length)stores=['<ENTER STORE NAME>'];
+  const month=document.getElementById('auditPeriod')?.value||'';
+  const riskName={H:'High',M:'Medium',L:'Low'};
+  let csv='Store,Month,Section,Clause,Risk,Wt.Max,Rating (1/0.5/0/NA),Observation\n';
+  stores.forEach(store=>{
+    SECTIONS.forEach(sec=>{
+      sec.items.forEach(item=>{
+        csv+=[csvQ(store),csvQ(month),csvQ(sec.name),csvQ(item.clause),csvQ(riskName[item.risk]||item.risk),item.wt,'',''].join(',')+'\n';
+      });
+    });
+  });
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download='RatingTemplate_'+MONTHS[new Date().getMonth()]+'.csv';
+  document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
+}
+function bulkUploadRatings(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{processRatingCSV(e.target.result);}
+    catch(err){alert('❌ Could not process file: '+err.message);}
+    input.value='';
+  };
+  reader.readAsText(file);
+}
+function processRatingCSV(text){
+  const rows=parseCSV(text).filter(r=>r.some(c=>String(c).trim()!==''));
+  if(rows.length<2){alert('No data rows found in the file.');return;}
+  const header=rows[0].map(h=>String(h).trim().toLowerCase());
+  const find=(...names)=>{for(const n of names){const i=header.findIndex(h=>h===n||h.startsWith(n));if(i>=0)return i;}return -1;};
+  const ci={store:find('store'),month:find('month','period'),section:find('section'),clause:find('clause','audit clause'),rating:find('rating'),obs:find('observation','obs','remark')};
+  if(ci.store<0||ci.clause<0||ci.rating<0){
+    alert('❌ File must contain at least Store, Clause and Rating columns.\n\nTip: use “⬇ Download Rating Template” to get the correct format.');
+    return;
+  }
+  const groups={};
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i];
+    const store=String(r[ci.store]||'').trim();
+    if(!store||store==='<ENTER STORE NAME>')continue;
+    const month=ci.month>=0?String(r[ci.month]||'').trim():'';
+    const key=store+'||'+month;
+    if(!groups[key])groups[key]={store,month,byClause:{},bySecClause:{}};
+    const cl=normClause(r[ci.clause]);if(!cl)continue;
+    const sec=ci.section>=0?normClause(r[ci.section]):'';
+    const val={rating:r[ci.rating],obs:ci.obs>=0?r[ci.obs]:''};
+    groups[key].byClause[cl]=val;
+    groups[key].bySecClause[sec+'||'+cl]=val;
+  }
+  const keys=Object.keys(groups);
+  if(!keys.length){alert('No valid store rows found. Make sure the Store column is filled in.');return;}
+  const recs=loadRecords();
+  const newStores=new Set(loadStores());
+  let created=0,updated=0,tRated=0,tBlank=0,tInvalid=0,tUnmatched=0;
+  const summary=[],skipped=[];
+  keys.forEach(key=>{
+    const g=groups[key];
+    const st={};let rated=0,blank=0,invalid=0,unmatched=0;
+    SECTIONS.forEach(sec=>{
+      const secN=normClause(sec.name);
+      sec.items.forEach((item,idx)=>{
+        const cl=normClause(item.clause);
+        const row=g.bySecClause[secN+'||'+cl]||g.byClause[cl];
+        if(!row){st[sec.id+'_'+idx]={rating:null,obs:''};unmatched++;return;}
+        const pr=parseRatingVal(row.rating);
+        if(pr.invalid)invalid++;
+        if(pr.blank)blank++;
+        if(pr.rating!==null&&pr.rating!==undefined)rated++;
+        st[sec.id+'_'+idx]={rating:pr.rating,obs:String(row.obs||'').trim()};
+      });
+    });
+    if(rated===0){skipped.push(g.store+(g.month?' ('+g.month+')':''));return;}
+    newStores.add(g.store);
+    let tO=0,tM=0;const ss=[];
+    SECTIONS.forEach(sec=>{
+      let sO=0,sM=0;
+      sec.items.forEach((item,idx)=>{
+        const rr=st[sec.id+'_'+idx].rating;
+        if(rr==='na'||rr===null||rr===undefined)return;
+        sM+=item.wt;if(rr===1)sO+=item.wt;else if(rr===0.5)sO+=item.wt*0.5;
+      });
+      tO+=sO;tM+=sM;ss.push({name:sec.name,icon:sec.icon||'📋',obt:Math.round(sO*10)/10,max:sM});
+    });
+    tO=Math.round(tO*10)/10;
+    const pct=tM>0?Math.round(tO/tM*100):0;
+    const period=g.month||'—';
+    const exIdx=recs.findIndex(r=>(r.store||'').toLowerCase()===g.store.toLowerCase()&&(r.period||'')===period);
+    const rec={
+      id:exIdx>=0?recs[exIdx].id:('rec_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),
+      store:g.store,period,tO,tM,pct,ss,
+      savedAt:new Date().toISOString(),
+      state:st,sections:JSON.parse(JSON.stringify(SECTIONS))
+    };
+    if(exIdx>=0){recs[exIdx]=rec;updated++;}else{recs.unshift(rec);created++;}
+    tRated+=rated;tBlank+=blank;tInvalid+=invalid;tUnmatched+=unmatched;
+    summary.push(g.store+' ('+period+'): '+pct+'%');
+  });
+  if(!created&&!updated){
+    alert('No records saved — every store row had a blank Rating column.\n\nFill the Rating column (1 / 0.5 / 0 / NA) and upload again.');
+    return;
+  }
+  saveStores([...newStores].sort((a,b)=>a.localeCompare(b)));
+  saveRecordsLS(recs);
+  populateStoreDropdown();
+  let msg='✅ Bulk upload complete!\n\n';
+  msg+='• Stores saved: '+(created+updated)+'  ('+created+' new, '+updated+' updated)\n';
+  msg+='• Ratings applied: '+tRated+'\n';
+  if(tBlank)msg+='• Left blank / unrated: '+tBlank+'\n';
+  if(tInvalid)msg+='• Invalid rating values ignored: '+tInvalid+'\n';
+  if(tUnmatched)msg+='• Clauses not found in file (unrated): '+tUnmatched+'\n';
+  if(skipped.length)msg+='• Skipped (no ratings filled): '+skipped.slice(0,5).join(', ')+(skipped.length>5?' …':'')+'\n';
+  msg+='\n'+summary.slice(0,12).join('\n')+(summary.length>12?'\n…and '+(summary.length-12)+' more':'');
+  alert(msg);
+  pushToSheets(true,false,recs);
+  showView('scoreTable');
 }
 function addStore(){
   const inp=document.getElementById('newStoreInput');const name=(inp.value||'').trim();if(!name){inp.focus();return;}
