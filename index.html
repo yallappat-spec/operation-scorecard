@@ -312,13 +312,13 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
   <div class="info-card" style="background:linear-gradient(90deg,#f0fdf4,#eff6ff);border-color:#bbf7d0">
     <div class="card-hdr" style="color:#059669">⚡ Bulk Upload Ratings — Store-wise (Save Time)</div>
     <div style="font-size:12.5px;color:var(--muted);line-height:1.65;margin-bottom:13px">
-      Rate many stores at once in Excel instead of tapping each clause here.
-      <strong>1)</strong> Download the template &nbsp;·&nbsp; <strong>2)</strong> Fill the <em>Rating</em> column (<strong>1 / 0.5 / 0 / NA</strong>) for each store &nbsp;·&nbsp; <strong>3)</strong> Upload it back — every store is saved as an audit record automatically.
+      Rate many stores at once in Excel instead of tapping each clause here — <strong>only mark the exceptions</strong>.
+      <strong>1)</strong> Download the template &nbsp;·&nbsp; <strong>2)</strong> In the <em>Rating</em> column enter only <strong>0</strong> (deviation), <strong>0.5</strong> (partial) or <strong>NA</strong> where needed — leave the rest blank &nbsp;·&nbsp; <strong>3)</strong> Upload it back.
     </div>
     <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
       <button class="btn-add-store" style="background:#1d4ed8" onclick="downloadRatingTemplate()">⬇ Download Rating Template</button>
       <label class="btn-add-store" style="background:#0f766e;cursor:pointer">📥 Upload Filled Template<input type="file" accept=".csv,.txt" style="display:none" onchange="bulkUploadRatings(this)"/></label>
-      <span style="font-size:11px;color:var(--muted)">Template lists every clause for each store. Blank Rating = left unrated. Imported records can still be edited under 📁 Saved Records.</span>
+      <span style="font-size:11px;color:var(--muted)"><strong>Any clause left blank (or not in the file) counts as 1 = Adhered.</strong> You can also upload only the issue rows. Imported records are editable under 📁 Saved Records.</span>
     </div>
   </div>
   <div class="legend">
@@ -779,25 +779,31 @@ function processRatingCSV(text){
   if(!keys.length){alert('No valid store rows found. Make sure the Store column is filled in.');return;}
   const recs=loadRecords();
   const newStores=new Set(loadStores());
-  let created=0,updated=0,tRated=0,tBlank=0,tInvalid=0,tUnmatched=0;
-  const summary=[],skipped=[];
+  let created=0,updated=0,tIssues=0,tNA=0,tDefaulted=0,tInvalid=0;
+  const summary=[];
   keys.forEach(key=>{
     const g=groups[key];
-    const st={};let rated=0,blank=0,invalid=0,unmatched=0;
+    // Exception-only workflow: only 0 / 0.5 / NA are taken from the file.
+    // Anything left blank — or a clause not present in the file at all —
+    // defaults to 1 (Adhered), so users only need to mark the exceptions.
+    const st={};let issues=0,naCnt=0,defaulted=0,invalid=0;
     SECTIONS.forEach(sec=>{
       const secN=normClause(sec.name);
       sec.items.forEach((item,idx)=>{
         const cl=normClause(item.clause);
         const row=g.bySecClause[secN+'||'+cl]||g.byClause[cl];
-        if(!row){st[sec.id+'_'+idx]={rating:null,obs:''};unmatched++;return;}
-        const pr=parseRatingVal(row.rating);
-        if(pr.invalid)invalid++;
-        if(pr.blank)blank++;
-        if(pr.rating!==null&&pr.rating!==undefined)rated++;
-        st[sec.id+'_'+idx]={rating:pr.rating,obs:String(row.obs||'').trim()};
+        let rating=1,obs='';
+        if(row){
+          obs=String(row.obs||'').trim();
+          const pr=parseRatingVal(row.rating);
+          if(pr.blank){rating=1;defaulted++;}
+          else if(pr.invalid){rating=1;invalid++;}
+          else if(pr.rating==='na'){rating='na';naCnt++;}
+          else{rating=pr.rating;if(rating===0||rating===0.5)issues++;else defaulted++;}
+        }else{rating=1;defaulted++;}
+        st[sec.id+'_'+idx]={rating,obs};
       });
     });
-    if(rated===0){skipped.push(g.store+(g.month?' ('+g.month+')':''));return;}
     newStores.add(g.store);
     let tO=0,tM=0;const ss=[];
     SECTIONS.forEach(sec=>{
@@ -821,11 +827,11 @@ function processRatingCSV(text){
       state:st,sections:JSON.parse(JSON.stringify(SECTIONS))
     };
     if(exIdx>=0){recs[exIdx]=rec;updated++;}else{recs.unshift(rec);created++;}
-    tRated+=rated;tBlank+=blank;tInvalid+=invalid;tUnmatched+=unmatched;
+    tIssues+=issues;tNA+=naCnt;tDefaulted+=defaulted;tInvalid+=invalid;
     summary.push(g.store+' ('+(year?year+' ':'')+period+'): '+pct+'%');
   });
   if(!created&&!updated){
-    alert('No records saved — every store row had a blank Rating column.\n\nFill the Rating column (1 / 0.5 / 0 / NA) and upload again.');
+    alert('No records saved — no valid store rows were found in the file.');
     return;
   }
   saveStores([...newStores].sort((a,b)=>a.localeCompare(b)));
@@ -833,11 +839,10 @@ function processRatingCSV(text){
   populateStoreDropdown();
   let msg='✅ Bulk upload complete!\n\n';
   msg+='• Stores saved: '+(created+updated)+'  ('+created+' new, '+updated+' updated)\n';
-  msg+='• Ratings applied: '+tRated+'\n';
-  if(tBlank)msg+='• Left blank / unrated: '+tBlank+'\n';
-  if(tInvalid)msg+='• Invalid rating values ignored: '+tInvalid+'\n';
-  if(tUnmatched)msg+='• Clauses not found in file (unrated): '+tUnmatched+'\n';
-  if(skipped.length)msg+='• Skipped (no ratings filled): '+skipped.slice(0,5).join(', ')+(skipped.length>5?' …':'')+'\n';
+  msg+='• Exceptions marked (0 / 0.5): '+tIssues+'\n';
+  if(tNA)msg+='• Marked NA: '+tNA+'\n';
+  msg+='• Auto-set to 1 (Adhered): '+tDefaulted+'\n';
+  if(tInvalid)msg+='• Unrecognised values (treated as 1): '+tInvalid+'\n';
   msg+='\n'+summary.slice(0,12).join('\n')+(summary.length>12?'\n…and '+(summary.length-12)+' more':'');
   alert(msg);
   pushToSheets(true,false,recs);
