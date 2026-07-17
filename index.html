@@ -678,6 +678,14 @@ function stripImgs(r){
     return{...rec,state:s};
   });
 }
+function stripForSheets(r){
+  // Like photos, per-record checklist copies (sections) push a record's JSON
+  // past Google Sheets' 50,000-char-per-cell limit, making the Apps Script
+  // write throw and silently drop records (no-cors hides the failure). The
+  // checklist syncs separately via the payload's `checklist` field, and every
+  // view falls back to the current checklist when rec.sections is absent.
+  return stripImgs(r).map(rec=>{const c={...rec};delete c.sections;delete c.secRef;return c;});
+}
 function saveRecordsLS(r){
   // Never store images in localStorage — they go to Google Sheets only.
   // Checklist snapshots are deduplicated into ahm_sections_lib: records saved
@@ -1577,7 +1585,7 @@ async function forcePushAll(){
   document.getElementById('syncStatus').textContent='';
   const url=getGsUrl();
   const payload=JSON.stringify({
-    records:stripImgs(recs),stores:loadStores(),
+    records:stripForSheets(recs),stores:loadStores(),
     checklist:localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null,
     checklistSavedAt:localStorage.getItem('ahm_checklist_savedAt')||null,
     backedUpAt:new Date().toISOString(),forceOverwrite:false
@@ -1599,10 +1607,11 @@ async function pushToSheets(silent,includeChecklist,recsOverride){
   const url=getGsUrl();if(!url)return;
   const localRecs=recsOverride||loadRecords();
   const payload=JSON.stringify({
-    // Strip photos: base64 images bloat a record's JSON past Google Sheets'
-    // 50,000-char-per-cell limit, which makes the Apps Script write throw and
-    // silently drop records (no-cors hides the failure). Sync scores/observations only.
-    records:stripImgs(localRecs),
+    // Strip photos and per-record checklist copies (see stripForSheets):
+    // both bloat a record's JSON past Google Sheets' 50,000-char-per-cell
+    // limit, which makes the Apps Script write throw and silently drop
+    // records (no-cors hides the failure). Sync scores/observations only.
+    records:stripForSheets(localRecs),
     stores:loadStores(),
     checklist:includeChecklist?(localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null):undefined,
     checklistSavedAt:includeChecklist?(localStorage.getItem('ahm_checklist_savedAt')||new Date().toISOString()):undefined,
@@ -1625,6 +1634,8 @@ async function pushToSheets(silent,includeChecklist,recsOverride){
           const sheetCount=(data.records||[]).length;
           if(sheetCount===0&&localRecs.length>0){
             updateSyncBadge('⚠️ Push FAILED — Sheets has 0 records! Re-deploy Apps Script.');
+          }else if(sheetCount<localRecs.length){
+            updateSyncBadge('⚠️ Push incomplete — Sheets has '+sheetCount+' of '+localRecs.length+' records.');
           }else if(data.lastError){
             updateSyncBadge('⚠️ Apps Script error: '+data.lastError.substring(0,60));
           }
@@ -1778,7 +1789,7 @@ async function runGsBackup(){
   const btn=document.getElementById('gsBkpBtn');
   const status=document.getElementById('gsStatus');
   btn.disabled=true;btn.textContent='Sending…';status.textContent='';
-  const payload=JSON.stringify({records:stripImgs(recs),stores:stores,backedUpAt:new Date().toISOString()});
+  const payload=JSON.stringify({records:stripForSheets(recs),stores:stores,backedUpAt:new Date().toISOString()});
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
     status.style.color='#059669';
