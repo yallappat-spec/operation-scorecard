@@ -1569,12 +1569,35 @@ function exportGapCSV(){
 function esc2(s){return String(s||'').replace(/"/g,'""');}
 
 /* ===== SYNC DATA (AUTO via Google Sheets) ===== */
+// Bump on every deploy: shown in the Sync modal so users can tell whether a
+// browser is still running a stale cached build of the app.
+const APP_BUILD='2026-07-17.2';
 function openSyncModal(){
   document.getElementById('syncModal').style.display='flex';
   document.getElementById('syncStatus').textContent='';
   const recs=loadRecords();const stores=loadStores();
   const last=localStorage.getItem('ahm_last_sync');
-  document.getElementById('syncInfo').textContent=recs.length+' records · '+stores.length+' stores'+(last?' · Last sync: '+last:'');
+  document.getElementById('syncInfo').textContent='This device: '+recs.length+' records · '+stores.length+' stores · App build '+APP_BUILD+(last?' · Last sync: '+last:'');
+  checkSheetStatus();
+}
+async function checkSheetStatus(){
+  const el=document.getElementById('syncSheetInfo');if(!el)return;
+  el.style.color='#64748b';
+  el.textContent='⏳ Checking what the Google Sheet holds…';
+  try{
+    const res=await fetch(getGsUrl()+'?action=read&t='+Date.now(),{method:'GET',redirect:'follow'});
+    const data=await res.json();
+    const recs=data.records||[];
+    let newest=null;recs.forEach(r=>{if(r.savedAt&&(!newest||r.savedAt>newest))newest=r.savedAt;});
+    el.textContent='Google Sheet: '+recs.length+' records'+(newest?' · newest saved '+new Date(newest).toLocaleString():'')+' · checklist '+(data.checklist&&data.checklist.length?'✓':'—');
+    if(data.lastError){
+      el.style.color='#dc2626';
+      el.textContent+='\n⚠️ Apps Script lastError: '+data.lastError;
+    }
+  }catch(e){
+    el.style.color='#dc2626';
+    el.textContent='❌ Could not read Google Sheet: '+e.message+'\nCheck the Apps Script URL / deployment.';
+  }
 }
 function closeSyncModal(){document.getElementById('syncModal').style.display='none';}
 
@@ -1885,7 +1908,8 @@ function logout(){
       No file transfer needed — Google Sheets is the sync hub
     </div>
 
-    <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:16px;font-family:var(--mono);background:#f8fafc;padding:8px 12px;border-radius:7px"></div>
+    <div id="syncInfo" style="font-size:12px;color:#64748b;margin-bottom:8px;font-family:var(--mono);background:#f8fafc;padding:8px 12px;border-radius:7px"></div>
+    <div id="syncSheetInfo" style="font-size:12px;color:#64748b;margin-bottom:16px;font-family:var(--mono);background:#f8fafc;padding:8px 12px;border-radius:7px;white-space:pre-line"></div>
 
     <div style="display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap">
       <button onclick="forcePushAll()" style="flex:1;padding:11px 16px;background:#059669;color:#fff;border:none;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">⬆️ Push ALL to Sheets</button>
