@@ -655,7 +655,21 @@ function persistSections(){
 }
 function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
 function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
-function loadRecords(){try{return JSON.parse(localStorage.getItem('ahm_records')||'[]')}catch{return[]}}
+function loadSectionsLib(){try{return JSON.parse(localStorage.getItem('ahm_sections_lib')||'{}')}catch{return{}}}
+function secSnapshotKey(json){let h=5381;for(let i=0;i<json.length;i++)h=((h<<5)+h+json.charCodeAt(i))>>>0;return h.toString(36)+'_'+json.length.toString(36);}
+function loadRecords(){
+  try{
+    const recs=JSON.parse(localStorage.getItem('ahm_records')||'[]');
+    const lib=loadSectionsLib();
+    recs.forEach(rec=>{
+      if(!rec.sections&&rec.secRef&&lib[rec.secRef]){
+        try{rec.sections=JSON.parse(lib[rec.secRef]);}catch{}
+      }
+      delete rec.secRef;
+    });
+    return recs;
+  }catch{return[]}
+}
 function stripImgs(r){
   return r.map(rec=>{
     if(!rec.state)return rec;
@@ -665,10 +679,42 @@ function stripImgs(r){
   });
 }
 function saveRecordsLS(r){
-  // Never store images in localStorage — they go to Google Sheets only
-  try{localStorage.setItem('ahm_records',JSON.stringify(stripImgs(r)));}catch(e){
-    alert('❌ Could not save to local storage: '+e.message);
+  // Never store images in localStorage — they go to Google Sheets only.
+  // Checklist snapshots are deduplicated into ahm_sections_lib: records saved
+  // against the same checklist share one stored copy. Embedding a full copy in
+  // every record overflows the ~5MB localStorage quota on bulk uploads.
+  const lib={};
+  const slim=stripImgs(r).map(rec=>{
+    if(!rec.sections)return rec;
+    const json=JSON.stringify(rec.sections);
+    const key=secSnapshotKey(json);
+    lib[key]=json;
+    const copy={...rec};delete copy.sections;copy.secRef=key;
+    return copy;
+  });
+  try{
+    // Records first: replacing a bloated legacy ahm_records frees the quota
+    // headroom the snapshot library write may need.
+    localStorage.setItem('ahm_records',JSON.stringify(slim));
+    localStorage.setItem('ahm_sections_lib',JSON.stringify(lib));
+  }catch(e){
+    try{
+      // Last resort: drop checklist snapshots entirely; views fall back to the current checklist.
+      slim.forEach(rec=>{delete rec.secRef;});
+      localStorage.removeItem('ahm_sections_lib');
+      localStorage.setItem('ahm_records',JSON.stringify(slim));
+    }catch(e2){
+      alert('❌ Could not save to local storage: '+e2.message+'\n\nFree up space: delete old audits under 📁 Saved Records (they stay in the Google Sheets backup), then try again.');
+    }
   }
+}
+function compactRecordsLS(){
+  // Migrate records saved by older versions, which embedded a full checklist
+  // copy inside every record — re-saving dedupes them into ahm_sections_lib.
+  try{
+    const raw=localStorage.getItem('ahm_records');
+    if(raw&&raw.indexOf('"sections":')>=0)saveRecordsLS(loadRecords());
+  }catch{}
 }
 let state={},editingId=null,pendingResult=null;
 function freshState(){const s={};SECTIONS.forEach(sec=>sec.items.forEach((_,i)=>{s[sec.id+'_'+i]={rating:1,obs:''}}));return s;}
@@ -1745,7 +1791,7 @@ async function runGsBackup(){
   btn.disabled=false;btn.textContent='☁️ Send Backup Now';
 }
 
-loadSections();state=freshState();populateStoreDropdown();renderForm();
+loadSections();compactRecordsLS();state=freshState();populateStoreDropdown();renderForm();
 async function autoSync(){
   // Always push local data first so Sheets stays up to date even if a
   // previous save-push silently failed, then pull to pick up edits from
