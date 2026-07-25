@@ -127,6 +127,22 @@ td{padding:11px 14px;font-size:13px;vertical-align:middle}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:500;box-shadow:0 8px 28px rgba(0,0,0,.3);z-index:300;opacity:0;transition:.28s}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 .hint{font-size:12px;color:var(--muted);line-height:1.55}
+.hint code{font-family:var(--mono);background:#f1f5fa;padding:1px 5px;border-radius:4px;font-size:11px;color:var(--navy)}
+/* upload */
+.fmt-box{background:#f7f9fc;border:1px solid var(--border);border-radius:11px;padding:14px 16px;margin-bottom:16px}
+.fmt-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:9px}
+.fmt-cols{display:flex;flex-wrap:wrap;gap:7px}
+.fmt-cols span{font-family:var(--mono);font-size:11.5px;font-weight:600;background:#eef2ff;color:var(--blue);border:1px solid #d6e0fb;padding:4px 9px;border-radius:7px}
+.dropzone{border:2px dashed #c7d2e5;border-radius:12px;padding:24px 16px;text-align:center;transition:.15s;cursor:pointer;background:#fafbfc}
+.dropzone.drag{border-color:var(--blue2);background:#eff5ff}
+.dz-icon{font-size:30px;margin-bottom:6px;opacity:.6}
+.dz-main{font-size:14px;font-weight:600;color:var(--navy);margin-bottom:3px}
+.dz-link{color:var(--blue);cursor:pointer;font-weight:600;text-decoration:underline}
+.dz-file{font-family:var(--mono);font-size:12px;color:var(--green);font-weight:600;margin-top:10px}
+.prev-stat{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;font-size:13px;color:#065f46;font-weight:500;margin-top:16px}
+.prev-stat.err{background:#fef2f2;border-color:#fecaca;color:#991b1b}
+.radio{display:flex;align-items:flex-start;gap:8px;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);margin-bottom:8px;cursor:pointer}
+.radio input{width:auto;margin-top:2px}
 .foot{text-align:center;font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:26px;opacity:.7}
 @media(max-width:640px){
   .bar-row{grid-template-columns:120px 1fr 44px}
@@ -159,8 +175,8 @@ td{padding:11px 14px;font-size:13px;vertical-align:middle}
     </div>
     <div class="hdr-right">
       <button class="btn-hdr btn-hdr-ghost" onclick="doPrint()">🖨 Print</button>
-      <button class="btn-hdr btn-hdr-ghost" onclick="importCSV()">⤒ Import</button>
-      <button class="btn-hdr btn-hdr-teal" onclick="exportCSV()">⤓ Export CSV</button>
+      <button class="btn-hdr btn-hdr-teal" onclick="openUpload()">⤒ Upload CSV</button>
+      <button class="btn-hdr btn-hdr-ghost" onclick="exportCSV()">⤓ Export CSV</button>
       <button class="btn-hdr btn-hdr-gold" onclick="openAdd()">＋ Add Asset</button>
     </div>
   </div>
@@ -263,7 +279,47 @@ td{padding:11px 14px;font-size:13px;vertical-align:middle}
   </div>
 </div>
 
-<input type="file" id="fileInput" accept=".csv" style="display:none"/>
+<!-- Upload modal -->
+<div class="modal-bg" id="uploadBg">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-hdr">
+      <h3>Upload Asset Data (CSV)</h3>
+      <button class="modal-x" onclick="closeUpload()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="fmt-box">
+        <div class="fmt-title">Required format — 4 columns, in this order:</div>
+        <div class="fmt-cols">
+          <span>Store Name</span><span>Asset Code</span><span>Asset Details</span><span>Qty</span>
+        </div>
+        <div class="hint" style="margin-top:8px">First row may be a header (auto-detected). One asset per row. Example: <code>29020 - BLR - DVG ROAD, KRPL-R00001, Monitor, 1</code></div>
+        <button class="btn btn-sm" style="margin-top:10px" onclick="downloadTemplate()">⤓ Download sample template</button>
+      </div>
+
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon">📄</div>
+        <div class="dz-main">Drag &amp; drop your CSV here</div>
+        <div class="hint">or <span class="dz-link" onclick="$('csvFile').click()">browse for a file</span></div>
+        <div class="dz-file" id="dzFile"></div>
+      </div>
+
+      <div id="uploadPreview" style="display:none">
+        <div class="prev-stat" id="prevStat"></div>
+        <div class="fld" style="margin-top:14px">
+          <label>How should this import be applied?</label>
+          <label class="radio"><input type="radio" name="impMode" value="replace" checked/> <b>Replace</b> — clear existing data and load only this file</label>
+          <label class="radio"><input type="radio" name="impMode" value="append"/> <b>Append</b> — add these rows on top of current data</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn" onclick="closeUpload()">Cancel</button>
+      <button class="btn btn-p" id="importBtn" onclick="doImport()" disabled>Import</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="csvFile" accept=".csv,text/csv" style="display:none"/>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -575,7 +631,68 @@ function exportCSV(){
   if(currentTab==='register') rows=filteredReg();
   downloadCSV(rows,'fixed_assets_export.csv'); toast('Exported '+rows.length+' rows');
 }
-function importCSV(){ $('fileInput').click(); }
+function downloadTemplate(){
+  const rows=[
+    ['Store Name','Asset Code','Asset Details','Qty'],
+    ['29020 - BLR - DVG ROAD','KRPL-R00001','Monitor','1'],
+    ['29020 - BLR - DVG ROAD','KRPL-R00006','Amplifier Speakers','6'],
+    ['27001 - Pimpri Chinchwad','KRPL-R00500','CCTV Camera','8']
+  ];
+  const blob=new Blob([rows.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='fixed_assets_template.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('Template downloaded');
+}
+let pendingRows=null;
+function openUpload(){
+  pendingRows=null;
+  $('dzFile').textContent=''; $('uploadPreview').style.display='none';
+  $('importBtn').disabled=true; $('dropzone').classList.remove('drag');
+  $('uploadBg').classList.add('open');
+}
+function closeUpload(){ $('uploadBg').classList.remove('open'); }
+function handleFile(f){
+  if(!f){ return; }
+  if(!/\.csv$/i.test(f.name) && f.type && !/csv|text/.test(f.type)){ toast('⚠ Please choose a .csv file'); }
+  $('dzFile').textContent='📎 '+f.name;
+  const rd=new FileReader();
+  rd.onload=function(){
+    try{
+      const raw=parseCSV(rd.result).filter(r=>r.some(c=>String(c).trim()!==''));
+      if(!raw.length){ showPrev('File appears to be empty.', true); return; }
+      let s=0; const hdr=raw[0].map(h=>String(h).toLowerCase());
+      if(hdr.some(h=>h.includes('store')||h.includes('asset')||h.includes('qty')||h.includes('code'))) s=1;
+      const parsed=[];
+      for(let r=s;r<raw.length;r++){
+        const c=raw[r];
+        const rec={store:(c[0]||'').trim(), code:(c[1]||'').trim(), detail:(c[2]||'').trim(), qty:parseInt(c[3])||0};
+        if(rec.store||rec.detail) parsed.push(rec);
+      }
+      if(!parsed.length){ showPrev('No valid rows found. Check the column order.', true); return; }
+      pendingRows=parsed;
+      const outlets=new Set(parsed.map(p=>p.store)).size;
+      const units=parsed.reduce((n,p)=>n+p.qty,0);
+      showPrev(`✓ Ready to import <b>${parsed.length}</b> asset lines across <b>${outlets}</b> outlet${outlets===1?'':'s'} (${num(units)} units).`, false);
+    }catch(err){ showPrev('Could not read this file: '+err.message, true); }
+  };
+  rd.readAsText(f);
+}
+function showPrev(html, isErr){
+  const p=$('uploadPreview'); p.style.display='block';
+  const st=$('prevStat'); st.innerHTML=html; st.classList.toggle('err', !!isErr);
+  $('importBtn').disabled = !!isErr || !pendingRows;
+}
+function doImport(){
+  if(!pendingRows) return;
+  const mode=(document.querySelector('input[name="impMode"]:checked')||{}).value||'replace';
+  if(mode==='replace'){ assets=[]; uid=1; }
+  pendingRows.forEach(r=>{ assets.push({id:uid++, store:r.store, code:r.code, detail:r.detail, qty:r.qty}); });
+  save(); closeUpload();
+  activeOutlet=null; showTab('outlets'); renderAll();
+  toast('✓ Imported '+pendingRows.length+' rows ('+mode+')');
+  pendingRows=null;
+}
 function parseCSV(text){
   const rows=[]; let i=0, field='', row=[], inq=false;
   while(i<text.length){
@@ -593,29 +710,14 @@ function parseCSV(text){
   if(field.length||row.length){row.push(field);rows.push(row);}
   return rows;
 }
-$('fileInput').addEventListener('change',function(e){
-  const f=e.target.files[0]; if(!f) return;
-  const rd=new FileReader();
-  rd.onload=function(){
-    try{
-      const rows=parseCSV(rd.result).filter(r=>r.some(c=>String(c).trim()!==''));
-      if(!rows.length){ toast('⚠ Empty file'); return; }
-      let s=0; const hdr=rows[0].map(h=>h.toLowerCase());
-      if(hdr.some(h=>h.includes('store')||h.includes('asset')||h.includes('qty'))) s=1;
-      const mode=confirm('OK = REPLACE all data with this file.\nCancel = APPEND file rows to existing data.');
-      const parsed=[];
-      for(let r=s;r<rows.length;r++){
-        const c=rows[r];
-        parsed.push({id:0, store:(c[0]||'').trim(), code:(c[1]||'').trim(), detail:(c[2]||'').trim(), qty:parseInt(c[3])||0});
-      }
-      const valid=parsed.filter(a=>a.store||a.detail);
-      if(mode){ assets=[]; uid=1; }
-      valid.forEach(a=>{a.id=uid++; assets.push(a);});
-      save(); renderAll(); toast('Imported '+valid.length+' rows');
-    }catch(err){ toast('⚠ Import failed: '+err.message); }
-  };
-  rd.readAsText(f); e.target.value='';
-});
+$('csvFile').addEventListener('change',function(e){ const f=e.target.files[0]; if(f) handleFile(f); e.target.value=''; });
+(function(){
+  const dz=$('dropzone'); if(!dz) return;
+  dz.addEventListener('click',e=>{ if(!e.target.classList.contains('dz-link')) $('csvFile').click(); });
+  ['dragenter','dragover'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
+  dz.addEventListener('drop',e=>{ const f=e.dataTransfer.files[0]; if(f) handleFile(f); });
+})();
 function doPrint(){ window.print(); }
 
 /* ---------- render all ---------- */
@@ -627,8 +729,9 @@ function renderAll(){
   if(currentTab==='register') renderRegister(false);
   $('foot').textContent = `Kushals Fixed Assets Tracker · ${num(assets.length)} lines · ${num(uniqueStores().length)} outlets · data saved locally in your browser`;
 }
-document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeUpload(); } });
 $('modalBg').addEventListener('click',e=>{ if(e.target===$('modalBg')) closeModal(); });
+$('uploadBg').addEventListener('click',e=>{ if(e.target===$('uploadBg')) closeUpload(); });
 
 /* ---------- boot ---------- */
 load();
