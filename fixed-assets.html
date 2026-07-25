@@ -311,6 +311,7 @@ td{padding:11px 14px;font-size:13px;vertical-align:middle}
           <label class="radio"><input type="radio" name="impMode" value="append"/> <b>Append</b> — add these rows on top of current data</label>
         </div>
       </div>
+      <div class="hint" style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">💾 Imported data is saved in <b>this browser</b> and stays after you close the page. To move it to another device or share it, use <b>Export CSV</b> and re-upload the file there.</div>
     </div>
     <div class="modal-ftr">
       <button class="btn" onclick="closeUpload()">Cancel</button>
@@ -618,13 +619,28 @@ function delAsset(id){
 
 /* ---------- CSV ---------- */
 function csvCell(v){ v=String(v==null?'':v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function anchorDownload(name,text){
+  const blob=new Blob([text],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+/* Works locally (anchor download) and on the hosted page (claude.downloads). */
+function saveFile(name,text){
+  try{
+    if(window.claude && window.claude.downloads && typeof window.claude.downloads.save==='function'){
+      window.claude.downloads.save({filename:name, data:text})
+        .catch(err=>{ if(err && err.code==='declined') return; anchorDownload(name,text); });
+      return;
+    }
+  }catch(e){}
+  anchorDownload(name,text);
+}
 function downloadCSV(rows,name){
   const head=['Store Name','Asset Code','Asset Details','Qty'];
   const lines=[head.join(',')].concat(rows.map(a=>[a.store,a.code,a.detail,a.qty].map(csvCell).join(',')));
-  const blob=new Blob([lines.join('\r\n')],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download=name; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  saveFile(name, lines.join('\r\n'));
 }
 function exportCSV(){
   let rows=assets;
@@ -638,10 +654,7 @@ function downloadTemplate(){
     ['29020 - BLR - DVG ROAD','KRPL-R00006','Amplifier Speakers','6'],
     ['27001 - Pimpri Chinchwad','KRPL-R00500','CCTV Camera','8']
   ];
-  const blob=new Blob([rows.map(r=>r.map(csvCell).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a'); a.href=url; a.download='fixed_assets_template.csv'; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  saveFile('fixed_assets_template.csv', rows.map(r=>r.map(csvCell).join(',')).join('\r\n'));
   toast('Template downloaded');
 }
 let pendingRows=null;
@@ -727,7 +740,7 @@ function renderAll(){
   if(currentTab==='dashboard') renderDashboard();
   if(currentTab==='outlets'){ if(activeOutlet) renderOutletTable(); else renderOutlets(); }
   if(currentTab==='register') renderRegister(false);
-  $('foot').textContent = `Kushals Fixed Assets Tracker · ${num(assets.length)} lines · ${num(uniqueStores().length)} outlets · data saved locally in your browser`;
+  $('foot').textContent = `Kushals Fixed Assets Tracker · ${num(assets.length)} lines · ${num(uniqueStores().length)} outlets · data saved in this browser — use Export CSV to back up or share`;
 }
 document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closeUpload(); } });
 $('modalBg').addEventListener('click',e=>{ if(e.target===$('modalBg')) closeModal(); });
