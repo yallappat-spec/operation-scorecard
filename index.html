@@ -1283,114 +1283,157 @@ function getMonthRecs(m){const r=loadRecords().filter(x=>x.period===m);if(!r.len
 
 function buildStoreHTMLBlob(rec,month){
   const{short}=getRtg(rec.pct);
-  const sc=rec.pct>=90?'#059669':rec.pct>=80?'#d97706':'#dc2626';
+  const CR='#c21a4f',CR2='#c2185b',GD='#b8860b',GR='#1f9d57',MUT='#8a8580';
+  const secCol=p=>p>=90?GR:p>=80?GD:CR;
   const riskLabel={H:'High Risk',M:'Medium Risk',L:'Low Risk'};
-  const riskBg={H:'#fef2f2',M:'#fffbeb',L:'#f0fdf4'};
-  const riskColor={H:'#dc2626',M:'#d97706',L:'#059669'};
+  const riskBg={H:'#fce4ec',M:'#fdf3d7',L:'#e3f6ea'};
+  const riskColor={H:'#c2185b',M:'#97701a',L:'#1f9d57'};
   const recSections=rec.sections||SECTIONS;
   let bdRows='';
   rec.ss.forEach(s=>{
     const sp=s.max>0?Math.round(s.obt/s.max*100):0;
-    const bc=sp>=90?'#059669':sp>=80?'#d97706':'#dc2626';
-    bdRows+=`<tr><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5">${esc(s.name)}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center;font-weight:700">${s.obt}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center">${s.max}</td><td style="padding:8px 12px;border-bottom:1px solid #f0f2f5;text-align:center;font-weight:700;color:${bc}">${sp}%</td></tr>`;
+    const bc=secCol(sp);
+    const perf=s.max>0?`<div class="pbar"><div class="pbar-fill" style="width:${Math.max(sp,2)}%;background:${bc}"></div></div>`:`<div class="pdot"></div>`;
+    bdRows+=`<tr><td class="bd-sec">${esc(s.name)}</td><td class="bd-perf">${perf}</td><td class="bd-score">${s.obt} / ${s.max}</td><td class="bd-pct" style="color:${s.max>0?bc:CR}">${sp}%</td></tr>`;
   });
-  let detRows='';
-  recSections.forEach(sec=>{
+  let detCards='';
+  recSections.forEach((sec,si)=>{
     let sO=0,sM=0;
     sec.items.forEach((item,idx)=>{const r=rec.state[sec.id+'_'+idx]?.rating;if(r!=='na'&&r!==null&&r!==undefined){sM+=item.wt;if(r===1)sO+=item.wt;else if(r===0.5)sO+=item.wt*0.5;}});
-    detRows+=`<tr><td colspan="6" style="background:linear-gradient(90deg,#f0f4f8,#e8f0fb);padding:10px 12px;font-weight:700;font-size:12px;color:#1e3a5f;border-top:2px solid #dde3ed"><span style="margin-right:6px">${sec.icon||''}</span>${esc(sec.name)}<span style="font-weight:400;color:#64748b;margin-left:8px">(${sO} / ${sM} pts)</span></td></tr>`;
+    let rows='';
     sec.items.forEach((item,idx)=>{
       const r=rec.state[sec.id+'_'+idx]?.rating;
       const obs=rec.state[sec.id+'_'+idx]?.obs||'';
       const img=rec.state[sec.id+'_'+idx]?.img||'';
-      const rd=r===null||r===undefined?'—':r==='na'?'NA':r===1?'1':r===0.5?'0.5':'0';
-      const rdBg=r===1?'#059669':r===0?'#dc2626':r===0.5?'#f59e0b':'#94a3b8';
-      const rb=riskBg[item.risk]||'#f8fafc';
-      const rc=riskColor[item.risk]||'#64748b';
+      let rLbl,rBg;
+      if(r===1){rLbl='Yes';rBg=GR;}
+      else if(r===0){rLbl='No';rBg=CR2;}
+      else if(r===0.5){rLbl='Partial';rBg=GD;}
+      else if(r==='na'){rLbl='NA';rBg='#9e9a97';}
+      else{rLbl='';rBg='';}
+      const ratingHTML=rLbl?`<span class="rate" style="background:${rBg}">${rLbl}</span>`:`<span class="rate-dash">—</span>`;
+      const rb=riskBg[item.risk]||'#f2f0ee';
+      const rc=riskColor[item.risk]||MUT;
       const rl=riskLabel[item.risk]||item.risk;
-      const imgHTML=img?`<br/><img src="${img}" style="max-width:180px;max-height:130px;border-radius:6px;border:1px solid #dde3ed;margin-top:5px"/>`:''
-      detRows+=`<tr style="border-bottom:1px solid #f0f2f5">
-        <td style="padding:8px 12px;text-align:center;font-size:11px;color:#94a3b8;width:32px">${idx+1}</td>
-        <td style="padding:8px 12px;font-size:11.5px;line-height:1.6;max-width:340px">${esc(item.clause)}</td>
-        <td style="padding:8px 12px;text-align:center;white-space:nowrap"><span style="display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:${rb};color:${rc};border:1px solid ${rc}40">${rl}</span></td>
-        <td style="padding:8px 12px;text-align:center;font-weight:600;color:#1e3a5f">${item.wt}</td>
-        <td style="padding:8px 12px;text-align:center"><span style="display:inline-block;min-width:28px;height:28px;line-height:28px;border-radius:6px;background:${rdBg};color:#fff;font-weight:700;font-size:13px;text-align:center;padding:0 6px">${rd}</span></td>
-        <td style="padding:8px 12px;font-size:11px;color:#64748b;min-width:140px">${esc(obs)||'—'}${imgHTML}</td>
+      const imgHTML=img?`<br/><img src="${img}" class="obs-img"/>`:'';
+      rows+=`<tr>
+        <td class="dt-no">${idx+1}</td>
+        <td class="dt-clause">${esc(item.clause)}</td>
+        <td class="dt-risk"><span class="risk-badge" style="background:${rb};color:${rc}">${rl}</span></td>
+        <td class="dt-wt">${item.wt}</td>
+        <td class="dt-rate">${ratingHTML}</td>
+        <td class="dt-obs">${esc(obs)||'—'}${imgHTML}</td>
       </tr>`;
     });
+    detCards+=`<div class="sec-card">
+      <div class="sec-card-hdr"><span class="sec-num">${si+1}</span><span class="sec-card-name">${esc(sec.name)}</span><span class="sec-card-pts">${sO} / ${sM} pts</span></div>
+      <table class="dt-tbl"><thead><tr><th class="dt-no">#</th><th>Audit Clause</th><th class="dt-risk">Risk</th><th class="dt-wt">Wt.</th><th class="dt-rate">Rating</th><th>Observation</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
   });
   const dateStr=new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
-  const zoneBg=rec.pct>=90?'#d1fae5':rec.pct>=80?'#fef9c3':'#fee2e2';
-  const zoneColor=rec.pct>=90?'#065f46':rec.pct>=80?'#713f12':'#7f1d1d';
+  const zoneCol=secCol(rec.pct);
+  const zoneBg=rec.pct>=90?'#e2f5ea':rec.pct>=80?'#fbf1d5':'#fce4ec';
+  const zoneTxt=rec.pct>=90?'#157a42':rec.pct>=80?'#8a6d10':'#c2185b';
+  const circ=2*Math.PI*42;
+  const dash=(Math.max(0,Math.min(100,rec.pct))/100)*circ;
   return `<!DOCTYPE html><html><head><meta charset="UTF-8"/>
 <title>Operation Scorecard — ${esc(rec.store)} — ${month}</title>
 <style>
-@media print{.no-print{display:none!important}@page{margin:12mm;size:A4 landscape}}
+@page{margin:11mm;size:A4 portrait}
+@media print{.no-print{display:none!important}body{background:#fff}}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Segoe UI',Arial,sans-serif;color:#1e2a3a;background:#f8fafc;font-size:12px}
-.page{max-width:1050px;margin:0 auto;padding:20px;background:#fff}
-.header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:linear-gradient(135deg,#0f1f3d,#1a3260);border-radius:10px;margin-bottom:16px;color:#fff}
-.logo-img{height:34px;background:#fff;border-radius:5px;padding:3px 8px}
-.hdr-text h1{font-size:15px;font-weight:700;margin:0}
-.hdr-text p{font-size:10px;opacity:.6;margin:2px 0 0}
-.print-btn{padding:6px 14px;background:#f59e0b;color:#0f1f3d;border:none;border-radius:6px;font-weight:700;font-size:11px;cursor:pointer}
-.score-card{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(90deg,#f8fafc,#eff6ff);border:1px solid #dde3ed;border-radius:10px;padding:14px 20px;margin-bottom:14px}
-.store-name{font-size:20px;font-weight:800;color:#0f1f3d}
-.meta{font-size:11px;color:#64748b;margin-top:3px}
-.score-box{text-align:center;background:#fff;border-radius:8px;padding:12px 20px;border:1px solid #dde3ed;min-width:120px}
-.score-pct{font-size:38px;font-weight:800;color:${sc};line-height:1}
-.score-zone{display:inline-block;margin-top:5px;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;background:${zoneBg};color:${zoneColor}}
-.score-pts{font-size:10px;color:#64748b;margin-top:3px}
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.sum-card{background:#fff;border:1px solid #dde3ed;border-radius:8px;padding:10px 14px;text-align:center}
-.sum-val{font-size:20px;font-weight:800;font-family:monospace;line-height:1}
-.sum-lbl{font-size:9px;color:#64748b;margin-top:3px;text-transform:uppercase;letter-spacing:.5px}
-.sec-title{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#1d4ed8;font-weight:700;margin:16px 0 7px;display:flex;align-items:center;gap:8px}
-.sec-title::after{content:'';flex:1;height:1px;background:#dde3ed}
-table{width:100%;border-collapse:collapse;margin-bottom:16px;border:1px solid #e2e8f0}
-.tbl-hdr th{background:linear-gradient(90deg,#f0f4f8,#e8f0fb);padding:8px 12px;font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#1e3a5f;text-align:left;font-weight:700;border-bottom:2px solid #dde3ed}
-.footer{margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;display:flex;justify-content:space-between}
+body{font-family:'Segoe UI',Helvetica,Arial,sans-serif;color:#2a2a2a;background:#f4f2ef;font-size:12px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.page{max-width:820px;margin:0 auto;padding:26px 30px 40px;background:#fff}
+.header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:15px;margin-bottom:24px;background-image:linear-gradient(90deg,#c21a4f,rgba(194,26,79,.28),transparent);background-size:100% 2px;background-repeat:no-repeat;background-position:left bottom}
+.brand{display:flex;align-items:center;gap:14px}
+.logo-img{height:30px;border:1px solid #e6e2dd;border-radius:6px;padding:5px 10px;background:#fff}
+.brand h1{font-family:Georgia,'Times New Roman',serif;font-size:20px;font-weight:700;color:#231f26;letter-spacing:.2px}
+.brand p{font-size:9px;letter-spacing:1.6px;text-transform:uppercase;color:#a49c94;margin-top:3px;font-weight:600}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:9px}
+.print-btn{padding:8px 16px;background:#a4123f;color:#fff;border:none;border-radius:7px;font-weight:700;font-size:12px;cursor:pointer}
+.hdr-meta{font-size:10px;color:#a49c94;line-height:1.7;text-align:right}
+.summary-card{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;background:#fff;border:1px solid #eae6e1;border-radius:16px;padding:24px 30px;margin-bottom:26px;box-shadow:0 1px 10px rgba(0,0,0,.04)}
+.sc-name{font-size:25px;font-weight:800;color:#231f26;letter-spacing:.3px;line-height:1.1}
+.sc-meta{font-size:12px;color:#8a847e;margin-top:11px}
+.sc-meta strong{color:#4a4640}
+.sc-right{display:flex;align-items:center;gap:22px}
+.donut{position:relative;width:108px;height:108px;flex-shrink:0}
+.donut svg{transform:rotate(-90deg)}
+.donut-txt{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-pct{font-size:23px;font-weight:800;color:#231f26;line-height:1}
+.donut-lbl{font-size:8px;letter-spacing:1.5px;color:#a49c94;font-weight:700;margin-top:3px}
+.sc-zone{text-align:center}
+.zone-badge{display:inline-block;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700}
+.sc-pts{font-size:12px;color:#8a847e;margin-top:9px}
+.sec-label{font-size:11px;text-transform:uppercase;letter-spacing:2px;color:#c21a4f;font-weight:700;margin:0 0 14px;display:flex;align-items:center;gap:12px}
+.sec-label::after{content:'';flex:1;height:1px;background:#eae6e1}
+.bd-wrap{border:1px solid #eae6e1;border-radius:12px;overflow:hidden;margin-bottom:30px;background:#fff}
+.bd-tbl{width:100%;border-collapse:collapse}
+.bd-tbl th{background:#f7f5f2;padding:11px 16px;font-size:9.5px;text-transform:uppercase;letter-spacing:1px;color:#a49c94;text-align:left;font-weight:700}
+.bd-tbl td{padding:12px 16px;border-top:1px solid #f0ede9;vertical-align:middle}
+.bd-sec{font-weight:700;color:#3a3630;font-size:12px}
+.bd-perf{width:44%}
+.pbar{background:#ece7e2;border-radius:8px;height:9px;overflow:hidden;width:100%}
+.pbar-fill{height:100%;border-radius:8px}
+.pdot{width:9px;height:9px;border-radius:50%;background:#c21a4f}
+.bd-score{text-align:right;font-size:12px;color:#6a655f;white-space:nowrap}
+.bd-pct{text-align:right;font-weight:700;font-size:12px;width:58px}
+.sec-card{border:1px solid #eae6e1;border-radius:12px;overflow:hidden;margin-bottom:16px;background:#fff;page-break-inside:avoid}
+.sec-card-hdr{display:flex;align-items:center;gap:12px;padding:12px 16px;background:linear-gradient(90deg,#2a2431,#1d1926);color:#fff}
+.sec-num{width:24px;height:24px;border-radius:6px;background:#c21a4f;color:#fff;font-weight:800;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sec-card-name{font-size:14px;font-weight:700;flex:1}
+.sec-card-pts{font-size:12px;color:#c9c3cf;font-weight:600;white-space:nowrap}
+.dt-tbl{width:100%;border-collapse:collapse}
+.dt-tbl th{padding:9px 14px;font-size:9px;text-transform:uppercase;letter-spacing:.8px;color:#a49c94;text-align:left;font-weight:700;border-bottom:1px solid #eee9e4}
+.dt-tbl td{padding:11px 14px;border-bottom:1px solid #f2efeb;vertical-align:top;font-size:11.5px}
+.dt-tbl tbody tr:last-child td{border-bottom:none}
+.dt-tbl tbody tr:nth-child(even){background:#faf8f6}
+.dt-no{width:34px;text-align:center;color:#b8b1aa;font-size:10.5px}
+.dt-clause{line-height:1.55;color:#3a3630;max-width:320px}
+.dt-risk{width:96px;white-space:nowrap}
+.risk-badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:9.5px;font-weight:700}
+.dt-wt{width:44px;text-align:center;font-weight:700;color:#4a4640}
+.dt-rate{width:78px;text-align:center}
+.rate{display:inline-block;min-width:44px;padding:4px 10px;border-radius:6px;color:#fff;font-weight:700;font-size:11px;text-align:center}
+.rate-dash{color:#c0bab3}
+.dt-obs{color:#7a746e;min-width:120px;line-height:1.5}
+.obs-img{max-width:150px;max-height:110px;border-radius:6px;border:1px solid #eae6e1;margin-top:6px;display:block}
+.footer{margin-top:26px;padding-top:12px;border-top:1px solid #eae6e1;font-size:9.5px;color:#b0a9a2;display:flex;justify-content:space-between}
 </style></head><body>
 <div class="page">
 <div class="header">
-  <div style="display:flex;align-items:center;gap:12px">
+  <div class="brand">
     <img class="logo-img" src="data:image/png;base64,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" alt="Kushals"/>
-    <div class="hdr-text"><h1>Operation Scorecard</h1><p>Store Operations Audit Report</p></div>
+    <div><h1>Retail Operations Scorecard</h1><p>Store Operations Audit Report</p></div>
   </div>
-  <div class="no-print" style="display:flex;align-items:center;gap:10px">
-    <span style="font-size:10px;opacity:.65">Generated: ${dateStr}</span>
-    <button class="print-btn" onclick="window.print()">🖨 Print / Save PDF</button>
+  <div class="hdr-right">
+    <button class="print-btn no-print" onclick="window.print()">Print / Save PDF</button>
+    <div class="hdr-meta">Generated ${dateStr}<br/>Kushals Retail · Confidential</div>
   </div>
 </div>
-<div class="score-card">
+<div class="summary-card">
   <div>
-    <div class="store-name">${esc(rec.store||'Unnamed Store')}</div>
-    <div class="meta">📅 Audit Period: <strong>${rec.period||'—'}${rec.year?' '+esc(rec.year):''}</strong></div>
-    <div class="meta">📆 Saved: ${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):''}</div>
+    <div class="sc-name">${esc(rec.store||'Unnamed Store')}</div>
+    <div class="sc-meta">Audit Period <strong>${esc(rec.period||'—')}${rec.year?' '+esc(rec.year):''}</strong>&nbsp;&nbsp;&nbsp;&nbsp;Saved <strong>${rec.savedAt?new Date(rec.savedAt).toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'}):'—'}</strong></div>
   </div>
-  <div class="score-box">
-    <div class="score-pct">${rec.pct}%</div>
-    <div class="score-zone">${short}</div>
-    <div class="score-pts">${rec.tO} / ${rec.tM} pts</div>
+  <div class="sc-right">
+    <div class="donut">
+      <svg viewBox="0 0 100 100" width="108" height="108">
+        <circle cx="50" cy="50" r="42" fill="none" stroke="#ece7e2" stroke-width="13"/>
+        <circle cx="50" cy="50" r="42" fill="none" stroke="${zoneCol}" stroke-width="13" stroke-linecap="round" stroke-dasharray="${dash} ${circ}"/>
+      </svg>
+      <div class="donut-txt"><div class="donut-pct">${rec.pct}%</div><div class="donut-lbl">SCORE</div></div>
+    </div>
+    <div class="sc-zone">
+      <div class="zone-badge" style="background:${zoneBg};color:${zoneTxt}">${short}</div>
+      <div class="sc-pts">${rec.tO} / ${rec.tM} pts</div>
+    </div>
   </div>
 </div>
-<div class="summary-grid">
-  <div class="sum-card"><div class="sum-val" style="color:#1d4ed8">${rec.tO}</div><div class="sum-lbl">Score Obtained</div></div>
-  <div class="sum-card"><div class="sum-val" style="color:#1e3a5f">${rec.tM}</div><div class="sum-lbl">Max Score</div></div>
-  <div class="sum-card"><div class="sum-val" style="color:${sc}">${rec.pct}%</div><div class="sum-lbl">Score %</div></div>
-  <div class="sum-card"><div class="sum-val" style="font-size:13px;padding-top:4px;color:${zoneColor}">${short}</div><div class="sum-lbl">Zone</div></div>
-</div>
-<div class="sec-title">Section-wise Breakdown</div>
-<table><thead class="tbl-hdr"><tr><th>Section</th><th style="text-align:center">Score Obtained</th><th style="text-align:center">Max Score</th><th style="text-align:center">Score %</th></tr></thead><tbody>${bdRows}</tbody></table>
-<div class="sec-title">Detailed Audit Responses</div>
-<table><thead class="tbl-hdr"><tr>
-  <th style="width:32px;text-align:center">#</th>
-  <th>Audit Clause</th>
-  <th style="text-align:center">Risk</th>
-  <th style="text-align:center">Wt.Max</th>
-  <th style="text-align:center">Rating</th>
-  <th>Observation</th>
-</tr></thead><tbody>${detRows}</tbody></table>
+<div class="sec-label">Section-wise Breakdown</div>
+<div class="bd-wrap"><table class="bd-tbl"><thead><tr><th>Section</th><th>Performance</th><th style="text-align:right">Score</th><th style="text-align:right">%</th></tr></thead><tbody>${bdRows}</tbody></table></div>
+<div class="sec-label">Detailed Audit Responses</div>
+${detCards}
 <div class="footer"><span>Kushals Retail · Operation Scorecard</span><span>© ${new Date().getFullYear()} Kushals Retail</span></div>
 </div></body></html>`;
 }
