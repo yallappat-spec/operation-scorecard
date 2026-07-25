@@ -1316,13 +1316,15 @@ function buildStoreHTMLBlob(rec,month){
       const rc=riskColor[item.risk]||MUT;
       const rl=riskLabel[item.risk]||item.risk;
       const imgHTML=img?`<br/><img src="${img}" class="obs-img"/>`:'';
+      let obsTxt=esc(obs);
+      if(!obsTxt){if(r==='na')obsTxt='Not applicable';else if(r===1)obsTxt='No Deviation found in the process';else obsTxt='—';}
       rows+=`<tr>
         <td class="dt-no">${idx+1}</td>
         <td class="dt-clause">${esc(item.clause)}</td>
         <td class="dt-risk"><span class="risk-badge" style="background:${rb};color:${rc}">${rl}</span></td>
         <td class="dt-wt">${item.wt}</td>
         <td class="dt-rate">${ratingHTML}</td>
-        <td class="dt-obs">${esc(obs)||'—'}${imgHTML}</td>
+        <td class="dt-obs">${obsTxt}${imgHTML}</td>
       </tr>`;
     });
     detCards+=`<div class="sec-card">
@@ -1453,7 +1455,7 @@ function exportAllExcel(){
   let csv='Store Name,Year,Audit Period,Score Obtained,Max Score,% Score,Zone\n';
   recs.forEach(r=>{const{short}=getRtg(r.pct);csv+='"'+(r.store||'')+'","'+(r.year||'')+'","'+(r.period||'')+'",'+r.tO+','+r.tM+','+r.pct+'%,"'+short+'"\n';});
   csv+='\n\nDetailed Responses\nStore,Year,Period,Section,Clause,Risk,Wt.Max,Rating,Observation\n';
-  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);const obs=st?st.obs||'':'';csv+='"'+(rec.store||'')+'","'+(rec.year||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
+  recs.forEach(rec=>{const secs=rec.sections||SECTIONS;secs.forEach(sec=>{sec.items.forEach((item,idx)=>{const key=sec.id+'_'+idx;const st=rec.state&&rec.state[key];const r=st?st.rating:null;const rd=r===null||r===undefined?'Not Rated':r==='na'?'NA':r===0.5?'0.5':String(r===1?1:0);let obs=st?st.obs||'':'';if(!obs){if(r==='na')obs='Not applicable';else if(r===1)obs='No Deviation found in the process';}csv+='"'+(rec.store||'')+'","'+(rec.year||'')+'","'+(rec.period||'')+'","'+String(sec.name||'').replace(/"/g,'""')+'","'+String(item.clause||'').replace(/"/g,'""')+'","'+({H:'High',M:'Medium',L:'Low'}[item.risk]||'')+'",'+item.wt+',"'+rd+'","'+String(obs).replace(/"/g,'""')+'"\n';});});});
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='OpScorecard_'+label+'.csv';document.body.appendChild(a);a.click();setTimeout(()=>document.body.removeChild(a),1000);
 }
 function downloadSingleReport(id){
