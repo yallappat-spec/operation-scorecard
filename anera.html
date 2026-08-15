@@ -659,12 +659,25 @@ const ANERA_SECTIONS=[
 ];;
 let SECTIONS=[];
 function loadSections(){
+  const expectedSectionCount=18;
+  const expectedClauseCount=52;
   try{
     const s=localStorage.getItem('anera_checklist');
-    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(ANERA_SECTIONS));
+    if(s){
+      const parsed=JSON.parse(s);
+      let totalClauses=0;
+      parsed.forEach(sec=>totalClauses+=sec.items.length);
+      if(parsed.length===expectedSectionCount&&totalClauses===expectedClauseCount){
+        SECTIONS=parsed;
+      }else{
+        localStorage.removeItem('anera_checklist');
+        SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+      }
+    }else{
+      SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+    }
   }catch{SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
-  // clean up legacy ahm_imgs_* keys left by older version
   Object.keys(localStorage).filter(k=>k.startsWith('ahm_imgs_')).forEach(k=>localStorage.removeItem(k));
 }
 function persistSections(){
