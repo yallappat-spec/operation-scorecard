@@ -659,12 +659,32 @@ const ANERA_SECTIONS=[
 let SECTIONS=[];
 let CURRENT_BRAND='kushals';
 function loadSections(){
+  const EXPECTED_SECTIONS=18;
+  const EXPECTED_CLAUSES=52;
   try{
     const s=localStorage.getItem('anera_checklist');
-    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(ANERA_SECTIONS));
-  }catch{SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));}
+    if(s){
+      const parsed=JSON.parse(s);
+      let clauseCount=0;
+      if(Array.isArray(parsed)){
+        parsed.forEach(sec=>{if(sec.items)clauseCount+=sec.items.length;});
+      }
+      if(parsed.length===EXPECTED_SECTIONS&&clauseCount===EXPECTED_CLAUSES){
+        SECTIONS=parsed;
+      }else{
+        console.log('Old checklist detected, resetting to fresh ANERA version');
+        localStorage.removeItem('anera_checklist');
+        SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+      }
+    }else{
+      SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+    }
+  }catch(e){
+    console.log('Error loading checklist:', e);
+    localStorage.removeItem('anera_checklist');
+    SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+  }
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
-  // clean up legacy ahm_imgs_* keys left by older version
   Object.keys(localStorage).filter(k=>k.startsWith('ahm_imgs_')).forEach(k=>localStorage.removeItem(k));
 }
 function persistSections(){
