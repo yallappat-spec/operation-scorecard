@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
 <meta http-equiv="Pragma" content="no-cache"/>
 <meta http-equiv="Expires" content="0"/>
-<title>Operation Scorecard</title>
+<title>ANERA Operation Scorecard</title>
 <!-- redeploy: force fresh GitHub Pages build -->
 <style>
 :root{--navy:#0f1f3d;--navy2:#1a3260;--blue:#1d4ed8;--blue2:#3b82f6;--green:#059669;--red:#dc2626;--amber:#d97706;--bg:#eef2f8;--card:#fff;--border:#dde3ed;--text:#1e2a3a;--muted:#64748b;--sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;--mono:'Courier New',Courier,monospace}
@@ -286,7 +286,7 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 <div class="hdr"><div class="hdr-in">
   <div class="hdr-brand">
     <div class="hdr-logo">OS</div>
-    <div><div class="hdr-title">Operation Scorecard</div><div class="hdr-sub">Store Audit Rating Sheet</div></div>
+    <div><div class="hdr-title">Operation Scorecard</div><div class="hdr-sub">ANERA Store Audit Rating Sheet</div></div>
   </div>
   <div class="hdr-right">
     <div class="hdr-note">1 = Adhered · 0 = Deviation · NA = Not Applicable</div>
@@ -566,79 +566,6 @@ td{padding:11px 12px;font-size:13px;vertical-align:middle}
 </div>
 <script>
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const DEFAULT_SECTIONS=[
-  {id:'inv',name:'Inventory Transactions',icon:'📦',items:[
-    {clause:'Whether the store is checking the inward items as per the given guidelines.',risk:'H',wt:5},
-    {clause:'Whether the store is transferring out mismatched items without verifying them in the RPOs.',risk:'H',wt:7},
-    {clause:'Whether the inward is done within the given timeline.',risk:'M',wt:5},
-    {clause:'Whether the inventory location process is followed at the store level.',risk:'H',wt:5},
-    {clause:'Whether the store displayed products on the floor without inwarding items.',risk:'H',wt:5},
-  ]},
-  {id:'phyinv',name:'Physical Inventory',icon:'🔢',items:[
-    {clause:'Whether the store is conducting weekly global count as per the given guidelines.',risk:'M',wt:5},
-    {clause:'Whether the store is conducting daily Temple silver counting as per the process.',risk:'H',wt:5},
-  ]},
-  {id:'tagless',name:'Tagless',icon:'🏷️',items:[
-    {clause:'Whether the store is sending a weekly tagless request or not.',risk:'M',wt:3},
-    {clause:'Whether the Stock or Surprise audit found less than 10 quantities of tagless items.',risk:'H',wt:5},
-    {clause:'Whether the design number is mentioned for tagless items (Separated Damages).',risk:'M',wt:2},
-  ]},
-  {id:'sales',name:'Sales Returns',icon:'🔄',items:[
-    {clause:'Whether all the sales return details are posted in the sales return group or not.',risk:'M',wt:5},
-    {clause:'Whether sales returns are done in INSTORE exchange mode.',risk:'H',wt:5},
-    {clause:'Whether the issue found in E-commerce exchange (Tender).',risk:'H',wt:5},
-  ]},
-  {id:'groom',name:'Grooming Standards',icon:'👔',items:[
-    {clause:'Whether grooming issues have been found in the store.',risk:'L',wt:3},
-    {clause:'Whether Any Behaviour related issues found in the store.',risk:'H',wt:5},
-  ]},
-  {id:'opncls',name:'Opening and Closing Deviation',icon:'🔑',items:[
-    {clause:'Whether the store is opening and closing as per the given guidelines.',risk:'H',wt:5},
-    {clause:'Whether Stores are taking briefing on a daily basis (1PM to 1.30PM).',risk:'M',wt:2},
-  ]},
-  {id:'cash',name:'Cash Management Controls',icon:'💰',items:[
-    {clause:'Whether any difference has been found between the system cash and physical cash (Is the account balance report tallying with the safe cash).',risk:'H',wt:5},
-    {clause:'Whether the petty cash amount is physically tallying or not (Minimum 100 Rs).',risk:'M',wt:3},
-    {clause:'Whether the float cash amount is tallying with the physical amount.',risk:'H',wt:5},
-  ]},
-  {id:'dmg',name:'Damages',icon:'⚠️',items:[
-    {clause:'Whether store damages are kept separately from the floor inventory or not (Exclude Stone fallen).',risk:'H',wt:5},
-    {clause:'Whether all the damages are moved to the damage location or not.',risk:'H',wt:5},
-    {clause:'Whether the Indian damages outward process is happening on a 15 days once (15th and 30th or 31st).',risk:'H',wt:5},
-    {clause:'Whether the nature of damage details is mentioned on the damaged items or not.',risk:'M',wt:2},
-  ]},
-  {id:'manual',name:'Manual Bills',icon:'🧾',items:[
-    {clause:'Whether the manual bills process is followed by store as per the given guidelines.',risk:'H',wt:5},
-    {clause:'Whether the completed manual book sent to the warehouse or not.',risk:'M',wt:3},
-    {clause:'Whether all the manual bills have been posted in the KRPL group or not.',risk:'H',wt:5},
-  ]},
-  {id:'rep',name:'Repaired Items',icon:'🔧',items:[
-    {clause:'Whether all the repaired items are kept separately from the store inventory.',risk:'H',wt:5},
-    {clause:'Whether there is a weekly follow-up process in place for clearing repair items from the store.',risk:'M',wt:3},
-    {clause:'Whether Temple polish process followed by the store or not.',risk:'M',wt:3},
-    {clause:'Whether any Necklace set earring mismatch or missing found in the current month.',risk:'H',wt:7},
-    {clause:'Whether the Temple polish amount matches with the warehouse drive sheet or not.',risk:'H',wt:5},
-  ]},
-  {id:'disp',name:'Display Items',icon:'🖼️',items:[
-    {clause:'Whether the display is done as per the standard for both the floor and back stock.',risk:'M',wt:5},
-    {clause:'Whether the stores has done silver items polishing at the store level.',risk:'L',wt:2},
-    {clause:'Whether the display cloth is clean and neat (Including Dusting).',risk:'L',wt:3},
-  ]},
-  {id:'cust',name:'Customer Handling',icon:'🤝',items:[
-    {clause:'Whether Store followed billing process as per the given guidelines.',risk:'H',wt:5},
-    {clause:'Whether the store reached a customer enrollment percentage above 90%?',risk:'M',wt:5},
-    {clause:'Whether Stores have scored Customer Excellence above 90% score 10, 80%-89% score 5, Below 80% score 0.',risk:'H',wt:10},
-  ]},
-  {id:'stexp',name:'Store Experience',icon:'✨',items:[
-    {clause:'Whether Fragrance pot is being used by the store or not.',risk:'L',wt:2},
-    {clause:'Whether Pantry Cleaning, Store hygiene related issues found during the audit.',risk:'L',wt:3},
-  ]},
-  {id:'ecom',name:'Ecommerce Process',icon:'🛒',items:[
-    {clause:'Whether Ecommerce rejection % is below 5%.',risk:'H',wt:5},
-    {clause:'Whether Packing issues have been highlighted for current month.',risk:'M',wt:3},
-    {clause:'Whether Ecommerce orders have been accepted before 4 hours (average).',risk:'M',wt:3},
-  ]},
-];
 const ANERA_SECTIONS=[
   {id:'inv',name:'Inventory Transactions',icon:'📦',items:[
     {clause:'Whether the store is checking the inward items as per the given guidelines',risk:'H',wt:5},
@@ -728,29 +655,28 @@ const ANERA_SECTIONS=[
   {id:'safety',name:'Safety',icon:'⚡',items:[
     {clause:'Electrical board is properly covered/shrouded, easily accessible, and a safety mat is kept. No combustible materials are stored within a 1-metre radius.',risk:'H',wt:3},
   ]},
-];
+];;
 let SECTIONS=[];
-let CURRENT_BRAND='kushals';
 function loadSections(){
   try{
-    const s=localStorage.getItem('ahm_checklist');
-    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_SECTIONS));
-  }catch{SECTIONS=JSON.parse(JSON.stringify(DEFAULT_SECTIONS));}
+    const s=localStorage.getItem('anera_checklist');
+    SECTIONS=s?JSON.parse(s):JSON.parse(JSON.stringify(ANERA_SECTIONS));
+  }catch{SECTIONS=JSON.parse(JSON.stringify(ANERA_SECTIONS));}
   SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
   // clean up legacy ahm_imgs_* keys left by older version
   Object.keys(localStorage).filter(k=>k.startsWith('ahm_imgs_')).forEach(k=>localStorage.removeItem(k));
 }
 function persistSections(){
-  localStorage.setItem('ahm_checklist',JSON.stringify(SECTIONS));
-  localStorage.setItem('ahm_checklist_savedAt',new Date().toISOString());
+  localStorage.setItem('anera_checklist',JSON.stringify(SECTIONS));
+  localStorage.setItem('anera_checklist_savedAt',new Date().toISOString());
 }
-function loadStores(){try{return JSON.parse(localStorage.getItem('ahm_stores')||'[]')}catch{return[]}}
-function saveStores(arr){localStorage.setItem('ahm_stores',JSON.stringify(arr));}
-function loadSectionsLib(){try{return JSON.parse(localStorage.getItem('ahm_sections_lib')||'{}')}catch{return{}}}
+function loadStores(){try{return JSON.parse(localStorage.getItem('anera_stores')||'[]')}catch{return[]}}
+function saveStores(arr){localStorage.setItem('anera_stores',JSON.stringify(arr));}
+function loadSectionsLib(){try{return JSON.parse(localStorage.getItem('anera_sections_lib')||'{}')}catch{return{}}}
 function secSnapshotKey(json){let h=5381;for(let i=0;i<json.length;i++)h=((h<<5)+h+json.charCodeAt(i))>>>0;return h.toString(36)+'_'+json.length.toString(36);}
 function loadRecords(){
   try{
-    const recs=JSON.parse(localStorage.getItem('ahm_records')||'[]');
+    const recs=JSON.parse(localStorage.getItem('anera_records')||'[]');
     const lib=loadSectionsLib();
     recs.forEach(rec=>{
       if(!rec.sections&&rec.secRef&&lib[rec.secRef]){
@@ -794,14 +720,14 @@ function saveRecordsLS(r){
   try{
     // Records first: replacing a bloated legacy ahm_records frees the quota
     // headroom the snapshot library write may need.
-    localStorage.setItem('ahm_records',JSON.stringify(slim));
-    localStorage.setItem('ahm_sections_lib',JSON.stringify(lib));
+    localStorage.setItem('anera_records',JSON.stringify(slim));
+    localStorage.setItem('anera_sections_lib',JSON.stringify(lib));
   }catch(e){
     try{
       // Last resort: drop checklist snapshots entirely; views fall back to the current checklist.
       slim.forEach(rec=>{delete rec.secRef;});
       localStorage.removeItem('ahm_sections_lib');
-      localStorage.setItem('ahm_records',JSON.stringify(slim));
+      localStorage.setItem('anera_records',JSON.stringify(slim));
     }catch(e2){
       alert('❌ Could not save to local storage: '+e2.message+'\n\nFree up space: delete old audits under 📁 Saved Records (they stay in the Google Sheets backup), then try again.');
     }
@@ -811,7 +737,7 @@ function compactRecordsLS(){
   // Migrate records saved by older versions, which embedded a full checklist
   // copy inside every record — re-saving dedupes them into ahm_sections_lib.
   try{
-    const raw=localStorage.getItem('ahm_records');
+    const raw=localStorage.getItem('anera_records');
     if(raw&&raw.indexOf('"sections":')>=0)saveRecordsLS(loadRecords());
   }catch{}
 }
@@ -1709,7 +1635,7 @@ function openSyncModal(){
   document.getElementById('syncModal').style.display='flex';
   document.getElementById('syncStatus').textContent='';
   const recs=loadRecords();const stores=loadStores();
-  const last=localStorage.getItem('ahm_last_sync');
+  const last=localStorage.getItem('anera_last_sync');
   document.getElementById('syncInfo').textContent=recs.length+' records · '+stores.length+' stores'+(last?' · Last sync: '+last:'');
 }
 function closeSyncModal(){document.getElementById('syncModal').style.display='none';}
@@ -1722,16 +1648,16 @@ async function forcePushAll(){
   const url=getGsUrl();
   const payload=JSON.stringify({
     records:stripForSheets(recs),stores:loadStores(),
-    checklist:localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null,
-    checklistSavedAt:localStorage.getItem('ahm_checklist_savedAt')||null,
+    checklist:localStorage.getItem('anera_checklist')?JSON.parse(localStorage.getItem('anera_checklist')):null,
+    checklistSavedAt:localStorage.getItem('anera_checklist_savedAt')||null,
     backedUpAt:new Date().toISOString(),forceOverwrite:false
   });
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
-    localStorage.setItem('ahm_last_sync',new Date().toLocaleString());
+    localStorage.setItem('anera_last_sync',new Date().toLocaleString());
     document.getElementById('syncStatus').style.color='#059669';
     document.getElementById('syncStatus').textContent='✅ All '+recs.length+' records pushed! Other systems will see them within 30 seconds.';
-    document.getElementById('syncInfo').textContent=recs.length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+    document.getElementById('syncInfo').textContent=recs.length+' records · Last sync: '+localStorage.getItem('anera_last_sync');
   }catch(e){
     document.getElementById('syncStatus').style.color='#dc2626';
     document.getElementById('syncStatus').textContent='❌ Push failed: '+e.message;
@@ -1749,17 +1675,17 @@ async function pushToSheets(silent,includeChecklist,recsOverride){
     // records (no-cors hides the failure). Sync scores/observations only.
     records:stripForSheets(localRecs),
     stores:loadStores(),
-    checklist:includeChecklist?(localStorage.getItem('ahm_checklist')?JSON.parse(localStorage.getItem('ahm_checklist')):null):undefined,
-    checklistSavedAt:includeChecklist?(localStorage.getItem('ahm_checklist_savedAt')||new Date().toISOString()):undefined,
+    checklist:includeChecklist?(localStorage.getItem('anera_checklist')?JSON.parse(localStorage.getItem('anera_checklist')):null):undefined,
+    checklistSavedAt:includeChecklist?(localStorage.getItem('anera_checklist_savedAt')||new Date().toISOString()):undefined,
     backedUpAt:new Date().toISOString()
   });
   try{
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
-    localStorage.setItem('ahm_last_sync',new Date().toLocaleString());
+    localStorage.setItem('anera_last_sync',new Date().toLocaleString());
     if(!silent){
       document.getElementById('syncStatus').style.color='#059669';
       document.getElementById('syncStatus').textContent='✅ Pushed to Google Sheets successfully!';
-      document.getElementById('syncInfo').textContent=localRecs.length+' records · Last sync: '+localStorage.getItem('ahm_last_sync');
+      document.getElementById('syncInfo').textContent=localRecs.length+' records · Last sync: '+localStorage.getItem('anera_last_sync');
     }
     // Verify push succeeded by pulling after 5s and comparing record counts
     if(localRecs.length>0){
@@ -1791,7 +1717,7 @@ async function pullFromSheets(silent){
     if(!data.records){throw new Error('No records in response.');}
     const result=mergeIncoming(data);
     const last=new Date().toLocaleString();
-    localStorage.setItem('ahm_last_sync',last);
+    localStorage.setItem('anera_last_sync',last);
     if(!silent){
       document.getElementById('syncStatus').style.color='#059669';
       document.getElementById('syncStatus').textContent='✅ Pulled '+data.records.length+' records. Page will reload…';
@@ -1832,12 +1758,12 @@ function mergeIncoming(data){
   }
   let checklistChanged=false;
   if(data.checklist&&Array.isArray(data.checklist)&&data.checklist.length){
-    const currentCl=localStorage.getItem('ahm_checklist');
+    const currentCl=localStorage.getItem('anera_checklist');
     const incomingCl=JSON.stringify(data.checklist);
     // Always apply if content is different - Sheets has the most recently saved version
     if(incomingCl!==currentCl){
-      localStorage.setItem('ahm_checklist',incomingCl);
-      localStorage.setItem('ahm_checklist_savedAt',data.checklistSavedAt||new Date().toISOString());
+      localStorage.setItem('anera_checklist',incomingCl);
+      localStorage.setItem('anera_checklist_savedAt',data.checklistSavedAt||new Date().toISOString());
       SECTIONS=JSON.parse(JSON.stringify(data.checklist));
       SECTIONS.forEach(sec=>sec.items.forEach((it,i)=>it.sno=i+1));
       checklistChanged=true;
@@ -1903,7 +1829,7 @@ function updateSyncBadge(last){
 
 /* ===== GOOGLE SHEETS BACKUP ===== */
 const GS_DEFAULT_URL='https://script.google.com/macros/s/AKfycbxnw8Pu5xBkHMD5dj3lGXaUWCnmA-1gSH74zOJeFA9rmlvG6cY7lelZZt_LvOLcBpU3/exec';
-function getGsUrl(){return localStorage.getItem('ahm_gs_url')||GS_DEFAULT_URL;}
+function getGsUrl(){return localStorage.getItem('anera_gs_url')||GS_DEFAULT_URL;}
 function openGsBackup(){
   document.getElementById('gsModal').style.display='flex';
   document.getElementById('gsUrl').value=getGsUrl();
@@ -1913,7 +1839,7 @@ function closeGsModal(){document.getElementById('gsModal').style.display='none';
 function saveGsUrl(){
   const url=document.getElementById('gsUrl').value.trim();
   if(!url){alert('Please enter the Apps Script URL.');return;}
-  localStorage.setItem('ahm_gs_url',url);
+  localStorage.setItem('anera_gs_url',url);
   document.getElementById('gsStatus').textContent='URL saved!';
 }
 async function runGsBackup(){
@@ -1930,7 +1856,7 @@ async function runGsBackup(){
     await fetch(url,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:payload});
     status.style.color='#059669';
     status.textContent='✅ Backup sent successfully! Check your Google Sheet.';
-    localStorage.setItem('ahm_gs_last_backup',new Date().toLocaleString());
+    localStorage.setItem('anera_gs_last_backup',new Date().toLocaleString());
   }catch(e){
     status.style.color='#dc2626';
     status.textContent='❌ Error: '+e.message;
@@ -1976,7 +1902,7 @@ async function doLogin(e){
   const err=document.getElementById('loginErr');
   const hash=await sha256Hex(p);
   if(u===AUTH_USER && hash===AUTH_HASH){
-    localStorage.setItem('ahm_auth',AUTH_HASH);
+    localStorage.setItem('anera_auth',AUTH_HASH);
     err.textContent='';
     document.getElementById('loginPass').value='';
     unlockApp();
@@ -1992,7 +1918,7 @@ function logout(){
   location.reload();
 }
 (function initAuth(){
-  if(localStorage.getItem('ahm_auth')===AUTH_HASH){
+  if(localStorage.getItem('anera_auth')===AUTH_HASH){
     unlockApp();
   }else{
     const gate=document.getElementById('loginGate');
