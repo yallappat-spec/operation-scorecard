@@ -688,7 +688,10 @@ function loadSections(){
   Object.keys(localStorage).filter(k=>k.startsWith('ahm_imgs_')).forEach(k=>localStorage.removeItem(k));
 }
 function persistSections(){
-  localStorage.setItem('anera_checklist',JSON.stringify(SECTIONS));
+  // Always save the current ANERA_SECTIONS structure (18 sections, 52 clauses)
+  // This prevents old data from being persisted
+  const toSave=JSON.parse(JSON.stringify(ANERA_SECTIONS));
+  localStorage.setItem('anera_checklist',JSON.stringify(toSave));
   localStorage.setItem('anera_checklist_savedAt',new Date().toISOString());
 }
 function loadStores(){try{return JSON.parse(localStorage.getItem('anera_stores')||'[]')}catch{return[]}}
